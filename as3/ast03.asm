@@ -302,24 +302,28 @@ mov 	byte [bRem18], ah
 ;	bAns19 = bNum8 / bNum5
 
 mov 	al, byte [bNum8]
+cbw
 idiv 	byte [bNum5]
 mov 	byte [bAns19], al
 
 ;	bAns20 = bNum7 / bNum6
 
 mov 	al, byte [bNum7]
+cbw
 idiv 	byte [bNum6]
 mov 	byte [bAns20], al
 
 ;	bAns21 = wNum6 / bNum4
 
 mov 	ax, word [wNum6]
+cwd
 idiv 	byte [bNum4]
 mov 	byte [bAns21], al
 
 ;	bRem21 = wNum6 % bNum4
 
 mov 	ax, word [wNum6]
+cwd
 idiv 	byte [bNum4]
 mov 	byte [bRem21], ah
 
@@ -330,15 +334,15 @@ mov 	byte [bRem21], ah
 ; unsigned word additions
 ;	wAns1  = wNum1 + wNum3
 mov 	ax, word [wNum1]
-add 	word [wNum3]
+add 	ax, word [wNum3]
 mov 	word [wAns1], ax
 ;	wAns2  = wNum2 + wNum4
 mov 	ax, word [wNum2]
-add 	word [wNum4]
+add 	ax, word [wNum4]
 mov 	word [wAns2], ax 
 ;	wAns3  = wNum3 + wNum2
 mov 	ax, word [wNum3]
-add 	word [wNum2]
+add 	ax, word [wNum2]
 mov 	word [wAns3], ax
 
 
@@ -348,32 +352,32 @@ mov 	word [wAns3], ax
 ;	wAns4  = wNum7 + wNum6
 
 mov 	ax, word [wNum7]
-add 	word [wNum6]
+add 	ax, word [wNum6]
 mov 	word [wAns4], ax
 
 ;	wAns5  = wNum8 + wNum5
 
 mov 	ax, word [wNum8]
-add 	word [wNum5]
+add 	ax, word [wNum5]
 mov 	word [wAns5], ax
 ; -----
 ; unsigned word subtractions
 ;	wAns6  = wNum3 - wNum1
 
 mov 	ax, word [wNum3]
-sub 	word [wNum1]
+sub 	ax, word [wNum1]
 mov 	word [wAns6], ax
 
 ;	wAns7  = wNum4 - wNum2
 
 mov 	ax, word [wNum4]
-sub 	word [wNum2]
+sub 	ax, word [wNum2]
 mov 	word [wAns7], ax
 
 ;	wAns8  = wNum2 - wNum1
 
 mov 	ax, word [wNum2]
-sub 	word [wNum1]
+sub 	ax, word [wNum1]
 mov 	word [wAns8], ax
 
 ; -----
@@ -381,13 +385,13 @@ mov 	word [wAns8], ax
 ;	wAns9  = wNum8 - wNum6
 
 mov 	ax, word [wNum8]
-sub 	word [wNum6]
+sub 	ax, word [wNum6]
 mov 	word [wAns9], ax
 
 ;	wAns10  = wNum7 - wNum5
 
 mov 	ax, word [wNum7]
-sub 	word [wNum5]
+sub 	ax, word [wNum5]
 mov 	word [wAns10], ax
 
 ; -----
@@ -404,14 +408,14 @@ mov 	word [dAns11 + 2], dx
 mov 	ax, word [wNum3]
 mul 	word [wNum2]
 mov 	word [dAns12], ax
-mov 	word [dans12 + 2], dx
+mov 	word [dAns12 + 2], dx
 
 ;	dAns13  = wNum4 * wNum1
 
 mov 	ax, word [wNum4]
 mul 	word [wNum1]
 mov 	word [dAns13], ax
-mov 	word [dans13 + 2], dx
+mov 	word [dAns13 + 2], dx
 
 
 ; -----
@@ -421,14 +425,14 @@ mov 	word [dans13 + 2], dx
 mov 	ax, word [wNum7]
 imul 	word [wNum5]
 mov 	word [dAns14], ax
-mov 	word [dans14 + 2], dx
+mov 	word [dAns14 + 2], dx
 
 ;	dAns15  = wNum8 * wNum6
 
 mov 	ax, word [wNum8]
 imul 	word [wNum6]
 mov 	word [dAns15], ax
-mov 	word [dans15 + 2], dx
+mov 	word [dAns15 + 2], dx
 
 ; -----
 ; unsigned word division
@@ -450,19 +454,50 @@ mov 	word [wAns17 + 2], dx
 
 ;	wAns18 = dNum2 / wNum1
 
-mov		eax, dword [dNum2]
-div 	
+mov 	eax, dword [dNum2]
+div 	word [wNum1]
+mov 	word [wAns18], ax
+mov 	word [wAns18 + 2], dx
 
 ;	wRem18 = dNum2 % wNum1
 
+mov 	eax, dword [dNum2]
+div 	word [wNum1]
+mov 	word [wRem18], ax
+mov 	word [wRem18 + 2], dx
 
 ; -----
 ; signed word division
 ;	wAns19 = wNum6 / wNum5
+
+mov 	ax, word [wNum6]
+cwd
+idiv 	word [wNum5]
+mov 	word [wAns19], ax
+mov 	word[wAns19 + 2], dx
+
 ;	wAns20 = wNum8 / wNum7
+
+mov 	ax, word [wNum8]
+cwd 	
+idiv 	word [wNum7]
+mov  	word [wAns20], ax
+mov 	word [wAns20 + 2], dx
+
 ;	wAns21 = dNum7 / wNum5
+
+mov 	eax, dword [dNum7]
+cdq
+idiv 	word [wNum5]
+mov 	word [wAns21], eax
+mov 	word [wAns21 + 4], edx
+
 ;	wRem21 = dNum7 % wNum5
 
+mov 	eax, dword [dNum7]
+cdq 	
+idiv 	word [wNum5]
+mov 	word [wRem21 + 4], edx
 
 ; *****************************************
 ; Double-Word Operations
@@ -470,33 +505,83 @@ div
 ; -----
 ; unsigned double-word additions
 ;	dAns1  = dNum4 + dNum1
+
+mov 	eax, dword [dNum4]
+add 	eax, dword [dNum1]
+mov 	dword [dAns1], eax
+
 ;	dAns2  = dNum3 + dNum2
+
+mov 	eax, dword [dNum3]
+add 	eax, dword [dNum2]
+mov 	dword [dAns2], eax
+
 ;	dAns3  = dNum2 + dNum4
 
+mov 	eax, dword [dNum2]
+add 	eax, dword [dNum4]
+mov 	dword [dAns3], eax
 
 ; -----
 ; signed double-word additions
 ;	dAns4  = dNum7 + dNum6
+
+mov 	eax, dword [dNum7]
+add 	eax, dword [dNum6]
+mov 	dword [dAns4], eax
+
 ;	dAns5  = dNum7 + dNum5
 
+mov 	eax, dword [dNum7]
+add 	eax, dword [dNum6]
+mov 	dword [dAns5], eax
 
 ; -----
 ; unsigned double-word subtractions
 ;	dAns6  = dNum4 - dNum2
+
+mov 	eax, dword [dNum4]
+sub 	eax, dword [dNum2]
+mov 	dword [dAns6], eax
+
 ;	dAns7  = dNum3 - dNum1
+
+mov 	eax, dword [dNum3]
+sub 	eax, dword [dNum2]
+mov 	dword [dAns7], eax
+
 ;	dAns8  = dNum2 - dNum1
 
+mov 	eax, dword [dNum2]
+sub 	eax, dword [dNum1]
+mov 	dword [dAns8], eax
 
 ; -----
 ; signed double-word subtraction
 ;	dAns9  = dNum7 - dNum6
+
+mov 	eax, dword [dNum7]
+sub 	eax, dword [dNum6]
+mov 	dword [dAns9], eax
+
 ;	dAns10 = dNum7 – dNum5
 
+mov 	eax, dword [dNum7]
+sub 	eax, dword [dNum5]
+mov 	dword [dAns10], eax
 
 ; -----
 ; unsigned double-word multiplication
 ;	qAns11  = dNum3 * dNum3
+
+mov 	eax, dword [dNum3]
+mul 	dword [dNum3]
+mov 	dword [qAns11], eax
+mov 	dword [qAns11 + 4], edx
+
 ;	qAns12  = dNum2 * dNum3
+
+
 ;	qAns13  = dNum1 * dNum4
 
 
