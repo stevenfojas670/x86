@@ -273,15 +273,13 @@ mov 	word [wAns15], ax
 ; unsigned byte division
 ;	bAns16 = bNum4 / bNum3
 
-mov 	al, byte [bNum4]
-mov 	ah, 0 ;clearing the remainder register
+movzx 	ax, byte [bNum4]
 div 	byte [bNum3]
 mov 	byte [bAns16], al
 
 ;	bAns17 = bNum3 / bNum2
 
-mov 	al, byte [bNum3]
-mov 	ah, 0
+movzx 	ax, byte [bNum3]
 div 	byte [bNum2]
 mov 	byte [bAns17], al
 
@@ -489,15 +487,15 @@ mov 	word [wAns20 + 2], dx
 mov 	eax, dword [dNum7]
 cdq
 idiv 	word [wNum5]
-mov 	word [wAns21], eax
-mov 	word [wAns21 + 4], edx
+mov 	dword [wAns21], eax
+mov 	dword [wAns21 + 4], edx
 
 ;	wRem21 = dNum7 % wNum5
 
 mov 	eax, dword [dNum7]
 cdq 	
 idiv 	word [wNum5]
-mov 	word [wRem21 + 4], edx
+mov 	dword [wRem21 + 4], edx
 
 ; *****************************************
 ; Double-Word Operations
@@ -581,21 +579,54 @@ mov 	dword [qAns11 + 4], edx
 
 ;	qAns12  = dNum2 * dNum3
 
+mov 	eax, dword [dNum2]
+mul 	dword [dNum3]
+mov 	dword [qAns12], eax
+mov 	dword [qAns12 + 4], edx
 
 ;	qAns13  = dNum1 * dNum4
 
+mov 	eax, dword [dNum1]
+mul 	dword [dNum4]
+mov 	dword [qAns13], eax
+mov 	dword [qAns13 + 4], edx
 
 ; -----
 ; signed double-word multiplication
 ;	qAns14  = dNum8 * dNum5
+
+mov 	eax, dword [dNum8]
+imul 	dword [dNum5]
+mov 	dword [qAns14], eax
+mov 	dword [qAns14 + 4], edx
+
 ;	qAns15  = dNum7 * dNum6
 
+mov 	eax, dword [dNum7]
+imul 	dword [dNum6]
+mov 	dword [qAns15], eax
+mov 	dword [qAns15 + 4], edx
 
 ; -----
 ; unsigned double-word division
 ;	dAns16 = dNum3 / dNum2
+
+mov 	eax, dword [dNum3]
+div 	dword [dNum2]
+mov 	dword [dAns16], eax
+
 ;	dAns17 = dNum4 / dNum1
+
+mov 	eax, dword [dNum4]
+div 	dword [dNum1]
+mov 	dword [dAns17], eax
+
 ;	dAns18 = qNum4 / dNum2
+
+mov 	rax, qword [qNum4]
+div 	dword [dNum2]
+mov 	qword [dAns18], rax
+
 ;	dRem18 = qNum4 % dNum2
 
 
