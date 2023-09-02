@@ -1,0 +1,185 @@
+#------------------------------------
+# CS 218
+#   Assignment #2
+#   Debugger Script File
+#------------------------------------
+echo \n\n
+break last
+run
+set pagination off
+set logging file a2out.txt
+set logging overwrite
+set logging enabled on
+set prompt
+echo \n
+echo ------------------------------------ \n
+echo display byte variables \n
+echo bVar1: \t
+x/db &bVar1
+echo bVar2: \t
+x/db &bVar2
+echo bAns1: \t
+x/db &bAns1
+echo bAns2: \t
+x/db &bAns2
+echo \n
+echo display byte variables in hex \n
+echo bVar1: \t
+x/xb &bVar1
+echo bVar2: \t
+x/xb &bVar2
+echo bAns1: \t
+x/xb &bAns1
+echo bAns2: \t
+x/xb &bAns2
+echo \n
+echo display byte variables in binary \n
+echo bVar1: \t
+x/tb &bVar1
+echo bVar2: \t
+x/tb &bVar2
+echo bAns1: \t
+x/tb &bAns1
+echo bAns2: \t
+x/tb &bAns2
+echo \n
+echo ------------------------------------ \n
+echo display word variables \n
+echo wVar1: \t
+x/dh &wVar1
+echo wVar2: \t
+x/dh &wVar2
+echo wAns1: \t
+x/dh &wAns1
+echo wAns2: \t
+x/dh &wAns2
+echo \n
+echo display word variables in hex \n
+echo wVar1: \t
+x/xh &wVar1
+echo wVar2: \t
+x/xh &wVar2
+echo wAns1: \t
+x/xh &wAns1
+echo wAns2: \t
+x/xh &wAns2
+echo \n
+echo display word variables in binary \n
+echo wVar1: \t
+x/th &wVar1
+echo wVar2: \t
+x/th &wVar2
+echo wAns1: \t
+x/th &wAns1
+echo wAns2: \t
+x/th &wAns2
+echo \n
+echo ------------------------------------ \n
+echo display double word variables \n
+echo dVar1: \t
+x/dw &dVar1
+echo dVar2: \t
+x/dw &dVar2
+echo dVar3: \t
+x/dw &dVar3
+echo dAns1: \t
+x/dw &dAns1
+echo dAns2: \t
+x/dw &dAns2
+echo \n
+echo display double word variables in hex\n
+echo dVar1: \t
+x/xw &dVar1
+echo dVar2: \t
+x/xw &dVar2
+echo dVar3: \t
+x/xw &dVar3
+echo dAns1: \t
+x/xw &dAns1
+echo dAns2: \t
+x/xw &dAns2
+echo \n
+echo display double word variables in binary\n
+echo dVar1: \t
+x/tw &dVar1
+echo dVar2: \t
+x/tw &dVar2
+echo dVar3: \t
+x/tw &dVar3
+echo dAns1: \t
+x/tw &dAns1
+echo dAns2: \t
+x/tw &dAns2
+echo \n
+echo ------------------------------------ \n
+echo display quad word variable \n
+echo qVar1: \t
+x/dg &qVar1
+echo \n
+echo display quad word variable in hex\n
+echo qVar1: \t
+x/xg &qVar1
+echo \n
+echo ------------------------------------ \n
+echo display real values in decimal \n
+echo flt1: \t
+x/fw &flt1
+echo flt2: \t
+x/fw &flt2
+echo tao: \t
+x/fw &tao
+echo \n
+echo display real values in hex\n
+echo flt1: \t
+x/fx &flt1
+echo flt2: \t
+x/fx &flt2
+echo tao: \t
+x/fx &tao
+echo \n
+echo display real values in binary\n
+echo flt1: \t
+x/tw &flt1
+echo flt2: \t
+x/tw &flt2
+echo tao: \t
+x/tw &tao
+echo \n
+echo ------------------------------------ \n
+echo display strings (first 6) as decimal / characters \n
+echo myClass: \t
+x/6cb &myClass
+echo saying: \t
+x/6cb &saying
+echo myName: \t
+x/6cb &myName
+echo \n
+echo display strings (first 6) as hex \n
+echo myClass: \t
+x/6cx &myClass
+echo saying: \t
+x/6cx &saying
+echo myName: \t
+x/6cx &myName
+echo \n
+echo display strings (first 6) as binary \n
+echo myClass: \t
+x/6tx &myClass
+echo saying: \t
+x/6tx &saying
+echo myName: \t
+x/6tx &myName
+echo \n
+echo display strings as strings \n
+echo myClass: \t
+x/s &myClass
+echo saying: \t
+x/s &saying
+echo myName: \t
+x/s &myName
+echo \n
+echo ------------------------------------ \n
+echo \n
+set logging enabled off
+quit
+
