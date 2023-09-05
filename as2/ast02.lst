@@ -82,7 +82,7 @@
     82                                 
     83 00000015 8A0425[00000000]       mov al, byte [bVar1]
     84 0000001C 2A0425[00000000]       sub al, byte [bVar2]
-    85 00000023 880425[00000000]       mov byte [bAns1], al
+    85 00000023 880425[00000000]       mov byte [bAns2], al
     86                                 
     87                                 
     88                                 
@@ -94,19 +94,25 @@
     94                                 
     95 00000042 668B0425[00000000]     mov ax, word [wVar1]
     96 0000004A 662B0425[00000000]     sub ax, word [wVar2]
-    97 00000052 66890425[00000000]     mov word [wAns1], ax
+    97 00000052 66890425[00000000]     mov word [wAns2], ax
     98                                 
     99                                 
    100                                 
    101 0000005A 8B0425[00000000]       mov eax, dword [dVar1]
-   102 00000061 2B0425[00000000]       sub eax, dword [dVar2]
-   103 00000068 890425[00000000]       mov dword [wAns1], eax
+   102 00000061 030425[00000000]       add eax, dword [dVar2]
+   103 00000068 890425[00000000]       mov dword [dAns1], eax
    104                                 
    105                                 
    106                                 
-   107                                 
-   108                                 last:
-   109 0000006F 48C7C03C000000          mov rax, SYS_exit
-   110 00000076 48C7C700000000          mov rdi, EXIT_SUCCESS
-   111 0000007D 0F05                    syscall
+   107 0000006F 8B0425[00000000]       mov eax, dword [dVar1]
+   108 00000076 2B0425[00000000]       sub eax, dword [dVar2]
+   109 0000007D 890425[00000000]       mov dword [dAns2], eax
+   110                                 
+   111                                 
    112                                 
+   113                                 
+   114                                 last:
+   115 00000084 48C7C03C000000          mov rax, SYS_exit
+   116 0000008B 48C7C700000000          mov rdi, EXIT_SUCCESS
+   117 00000092 0F05                    syscall
+   118                                 
