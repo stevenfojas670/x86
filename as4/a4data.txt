@@ -1,0 +1,46 @@
+section	.data
+
+; -----
+;  Define constants.
+
+NULL		equ	0			; end of string
+
+TRUE		equ	1
+FALSE		equ	0
+
+EXIT_SUCCESS	equ	0			; successful operation
+SYS_exit	equ	60			; call code for terminate
+
+; -----
+
+list		dd	 2140,  1116,  1540,  1240,  1677,  1635,  2426,  1820
+		dd	 1614,  2418,  2513,  1420,  2119,  1215,  1525,  1712
+		dd	 1441,  3622,  1731,  1729,  1615,  1724,  1217,  1224
+		dd	 1580,  1147,  2324,  1425,  1816,  1262,  2718,  2192
+  		dd	 1432,  1235,  2764,  1615,  1310,  1765,  1954,  1967
+		dd	 1515,  3556,  1342,  7321,  1556,  2727,  1227,  1927
+		dd	 1382,  1465,  3955,  1435,  1225,  2419,  2534,  1345
+		dd	 2467,  1315,  1961,  1335,  2856,  2553,  1032,  1835
+		dd	 1246,  2330,  2317,  1115,  2726,  2140,  2565,  2871
+		dd	 1464,  1915,  1810,  1465,  1554,  1267,  1615,  1656
+		dd	 2192,  1825,  1925,  2312,  1725,  2517,  1498,  1677
+		dd	 1475,  2034,  1223,  1883,  1173,  1350,  1415,  1335
+		dd	 1125,  1118,  1713,  3025
+length		dd	100
+
+listMin		dd	0
+listEstMed		dd	0
+listMax		dd	0
+listSum		dd	0
+listAve		dd	0
+
+evenCnt		dd	0
+evenSum		dd	0
+evenAve		dd	0
+
+tenCnt		dd	0
+tenSum		dd	0
+tenAve		dd	0
+
+
+
