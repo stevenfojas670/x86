@@ -111,106 +111,104 @@
    111                                 
    112 00000034 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
    113 0000003C 010425[00000000]       add dword [listSum], eax
-   114 00000043 448B2C25[00000000]     mov r13d, dword [listSum]
-   115                                 
-   116 0000004B 3B0425[00000000]       cmp eax, dword [listMin]
-   117 00000052 7200                   jb swapMin
-   118 00000054 EB0D                   jmp checkMax
-   119                                 
-   120                                 swapMin:
-   121 00000056 890425[00000000]       mov dword [listMin], eax
-   122 0000005D 448B3425[00000000]     mov r14d, dword [listMin]
-   123                                 
-   124                                 checkMax:
-   125 00000065 3B0425[00000000]       cmp eax, dword [listMax]
-   126 0000006C 7700                   ja swapMax
-   127 0000006E EB0D                   jmp checkEven
-   128                                 
-   129                                 swapMax:
-   130 00000070 890425[00000000]       mov dword [listMax], eax
-   131 00000077 448B3C25[00000000]     mov r15d, dword [listMax]
-   132                                 
-   133                                 checkEven:
-   134 0000007F 99                     cdq
-   135 00000080 F7F3                   div ebx
-   136 00000082 83FA00                 cmp edx, 0
-   137 00000085 7400                   je isEven
-   138 00000087 EB18                   jmp divBy10
-   139                                 
-   140                                 isEven:
-   141 00000089 49FFC3                 inc r11
-   142 0000008C 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
-   143 00000094 44891C25[00000000]     mov dword [evenCnt], r11d
-   144 0000009C 010425[00000000]       add dword [evenSum], eax
-   145                                 
-   146                                 divBy10:
-   147 000000A3 99                     cdq
-   148 000000A4 F7F1                   div ecx
-   149 000000A6 83FA00                 cmp edx, 0
-   150 000000A9 7400                   je isDivBy10
-   151 000000AB EB18                   jmp continue
-   152                                 
-   153                                 isDivBy10:
-   154 000000AD 49FFC2                 inc r10
-   155 000000B0 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
-   156 000000B8 44891425[00000000]     mov dword [tenCnt], r10d
-   157 000000C0 010425[00000000]       add dword [tenSum], eax
+   114                                 
+   115 00000043 3B0425[00000000]       cmp eax, dword [listMin]
+   116 0000004A 7200                   jb swapMin
+   117 0000004C EB05                   jmp checkMax
+   118                                 
+   119                                 swapMin:
+   120 0000004E 890425[00000000]       mov dword [listMin], eax
+   121                                 
+   122                                 checkMax:
+   123 00000055 3B0425[00000000]       cmp eax, dword [listMax]
+   124 0000005C 7700                   ja swapMax
+   125 0000005E EB05                   jmp checkEven
+   126                                 
+   127                                 swapMax:
+   128 00000060 890425[00000000]       mov dword [listMax], eax
+   129                                 
+   130                                 checkEven:
+   131 00000067 99                     cdq
+   132 00000068 F7F3                   div ebx
+   133 0000006A 83FA00                 cmp edx, 0
+   134 0000006D 7400                   je isEven
+   135 0000006F EB18                   jmp divBy10
+   136                                 
+   137                                 isEven:
+   138 00000071 49FFC3                 inc r11
+   139 00000074 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
+   140 0000007C 44891C25[00000000]     mov dword [evenCnt], r11d
+   141 00000084 010425[00000000]       add dword [evenSum], eax
+   142                                 
+   143                                 divBy10:
+   144 0000008B 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
+   145 00000093 99                     cdq
+   146 00000094 F7F1                   div ecx
+   147 00000096 83FA00                 cmp edx, 0
+   148 00000099 7400                   je isDivBy10
+   149 0000009B EB18                   jmp continue
+   150                                 
+   151                                 isDivBy10:
+   152 0000009D 49FFC2                 inc r10
+   153 000000A0 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
+   154 000000A8 44891425[00000000]     mov dword [tenCnt], r10d
+   155 000000B0 010425[00000000]       add dword [tenSum], eax
+   156                                 
+   157                                 continue:
    158                                 
-   159                                 continue:
-   160                                 
-   161 000000C7 49FFC4                 inc r12
-   162 000000CA 443B2425[00000000]     cmp r12d, dword [length]
-   163 000000D2 0F8556FFFFFF           jne loopStart
+   159 000000B7 49FFC4                 inc r12
+   160 000000BA 443B2425[00000000]     cmp r12d, dword [length]
+   161 000000C2 0F8566FFFFFF           jne loopStart
+   162                                 
+   163                                 
    164                                 
    165                                 
-   166                                 
-   167                                 
-   168 000000D8 48C7C000000000         mov rax, 0
-   169 000000DF 8B0425[00000000]       mov eax, dword [listSum]
-   170 000000E6 99                     cdq
-   171 000000E7 F73425[00000000]       div dword [length]
-   172 000000EE 890425[00000000]       mov dword [listAve], eax
+   166 000000C8 48C7C000000000         mov rax, 0
+   167 000000CF 8B0425[00000000]       mov eax, dword [listSum]
+   168 000000D6 99                     cdq
+   169 000000D7 F73425[00000000]       div dword [length]
+   170 000000DE 890425[00000000]       mov dword [listAve], eax
+   171                                 
+   172                                 
    173                                 
-   174                                 
-   175                                 
-   176 000000F5 48C7C000000000         mov rax, 0
-   177 000000FC 8B0425[00000000]       mov eax, dword [evenSum]
-   178 00000103 99                     cdq
-   179 00000104 F73425[00000000]       div dword [length]
-   180 0000010B 890425[00000000]       mov dword [evenAve], eax
+   174 000000E5 48C7C000000000         mov rax, 0
+   175 000000EC 8B0425[00000000]       mov eax, dword [evenSum]
+   176 000000F3 99                     cdq
+   177 000000F4 F73425[00000000]       div dword [evenCnt]
+   178 000000FB 890425[00000000]       mov dword [evenAve], eax
+   179                                 
+   180                                 
    181                                 
-   182                                 
-   183                                 
-   184 00000112 48C7C000000000         mov rax, 0
-   185 00000119 8B0425[00000000]       mov eax, dword [tenSum]
-   186 00000120 99                     cdq
-   187 00000121 F73425[00000000]       div dword [length]
-   188 00000128 890425[00000000]       mov dword [tenAve], eax
+   182 00000102 48C7C000000000         mov rax, 0
+   183 00000109 8B0425[00000000]       mov eax, dword [tenSum]
+   184 00000110 99                     cdq
+   185 00000111 F73425[00000000]       div dword [tenCnt]
+   186 00000118 890425[00000000]       mov dword [tenAve], eax
+   187                                 
+   188                                 
    189                                 
    190                                 
    191                                 
    192                                 
-   193                                 
-   194                                 
-   195 0000012F 8B0425[00000000]       mov eax, dword [length]
-   196 00000136 99                     cdq
-   197 00000137 F7F3                   div ebx
-   198 00000139 49C7C400000000         mov r12, 0
-   199 00000140 4189C4                 mov r12d, eax
-   200                                 
-   201 00000143 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
-   202 0000014B 420304A5[FCFFFFFF]     add eax, dword [list + ((r12 * 4) - 4)]
-   203 00000153 99                     cdq
-   204 00000154 F7F3                   div ebx
-   205 00000156 890425[00000000]       mov dword [listEstMed], eax
+   193 0000011F 8B0425[00000000]       mov eax, dword [length]
+   194 00000126 99                     cdq
+   195 00000127 F7F3                   div ebx
+   196 00000129 49C7C400000000         mov r12, 0
+   197 00000130 4189C4                 mov r12d, eax
+   198                                 
+   199 00000133 428B04A5[00000000]     mov eax, dword [list + r12 * 4]
+   200 0000013B 420304A5[FCFFFFFF]     add eax, dword [list + ((r12 * 4) - 4)]
+   201 00000143 99                     cdq
+   202 00000144 F7F3                   div ebx
+   203 00000146 890425[00000000]       mov dword [listEstMed], eax
+   204                                 
+   205                                 
    206                                 
    207                                 
    208                                 
    209                                 
-   210                                 
-   211                                 
-   212                                 last:
-   213 0000015D 48C7C03C000000          mov rax, SYS_exit
-   214 00000164 48C7C700000000          mov rdi, EXIT_SUCCESS
-   215 0000016B 0F05                    syscall
-   216                                 
+   210                                 last:
+   211 0000014D 48C7C03C000000          mov rax, SYS_exit
+   212 00000154 48C7C700000000          mov rdi, EXIT_SUCCESS
+   213 0000015B 0F05                    syscall
+   214                                 

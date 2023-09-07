@@ -73,7 +73,6 @@ loopStart:
 ;Set first value to max
 mov 	eax, dword [list + r12 * 4]
 add 	dword [listSum], eax			;Finding the sum
-mov 	r13d, dword [listSum]
 
 cmp 	eax, dword [listMin]
 jb 		swapMin
@@ -81,7 +80,6 @@ jmp		checkMax
 
 swapMin:
 mov 	dword [listMin], eax
-mov 	r14d, dword [listMin]
 
 checkMax:
 cmp 	eax, dword [listMax]
@@ -90,7 +88,6 @@ jmp 	checkEven
 
 swapMax:
 mov 	dword [listMax], eax
-mov 	r15d, dword [listMax]
 
 checkEven:
 cdq
@@ -106,6 +103,7 @@ mov 	dword [evenCnt], r11d			;Getting the count
 add 	dword [evenSum], eax
 
 divBy10: ;Divides eax by 10 from ecx, if edx is 0 then eax is divisible by 10
+mov 	eax, dword [list + r12 * 4]
 cdq
 div 	ecx
 cmp		edx, 0
