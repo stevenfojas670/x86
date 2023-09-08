@@ -20,7 +20,6 @@ FALSE		equ	0
 EXIT_SUCCESS	equ	0			; Successful operation
 SYS_exit	equ	60			; call code for terminate
 
-; ----------------------------------------------------------
 sideLens dd 1145, 1135, 1123, 1123, 1123
 dd 1254, 1454, 1152, 1164, 1542
 dd 1353, 1457, 1182, 1142, 1354
@@ -59,6 +58,7 @@ hexPerims resd 50
 hexAreas resd 50
 
 
+
 ; *****************************************************************
 
 section	.text
@@ -70,35 +70,38 @@ _start:
 ;hexPerims [i] = 6 * sideLens[i]
 ;hexAreas[i] = (hexPerims[i] * apothemLens[i])/2
 
-mov 	r12, 0		;counter
+mov 	rax, 0
+mov 	rcx, 0
 
 mainLoop:
-mov 	eax, dword [sideLens + (r12 * 4)]
-mov 	ecx, 6
-mul 	ecx
-mov 	dword [hexPerims], eax ;Placing the calculated perimeter into first hexPerim
+mov 	eax, dword [sideLens + (rcx * 4)]
+mov 	ebx, 6
+mul 	ebx
+mov 	dword [hexPerims + (rcx * 4)], eax
 
 ;Calculate the area
-movsx 	eax, word [apothemLens + (r12 * 2)]
-mov 	ecx, 2
-mul 	dword [hexPerims + (r12 * 4)]
+movzx 	eax, word [apothemLens + (rcx * 2)]
+mov 	ebx, 2
+mul 	dword [hexPerims + (rcx * 4)]
+mov 	r14d, dword [hexPerims + (rcx * 4)]
 cdq
-div 	ecx
-mov 	dword [hexAreas], eax
+div 	ebx
+mov 	dword [hexAreas + (rcx * 4)], eax
+mov 	r15d, dword [hexAreas]
 
-inc 	r12
-cmp 	r12d, dword [length]
-jne 	mainLoop
+inc 	rcx
+cmp 	ecx, dword [length]
+jb 		mainLoop
 
 ;min, max, estMed, sum, average for AREA and PERIM
 
-mov 	r12, 0		;counter for the area and perim
+mov 	rcx, 0		;counter for the area and perim
 mov 	eax, dword [hexPerims]
 mov 	dword [perimMax], eax	;setting the min and max to the first val
 mov 	dword [perimMin], eax
 
 perimeterLoop:
-mov 	eax, dword [hexPerims + (r12 * 4)]
+mov 	eax, dword [hexPerims + (rcx * 4)]
 add 	dword [perimSum], eax
 
 cmp 	dword [perimMax], eax
@@ -118,8 +121,8 @@ mov 	dword [perimMin], eax
 
 continue:
 
-inc 	r12
-cmp 	r12d, dword [length]
+inc 	rcx
+cmp 	ecx, dword [length]
 jne 	perimeterLoop
 
 ;Average and EstMed
@@ -130,26 +133,26 @@ mov 	dword [perimAve], eax
 
 mov 	eax, dword [length]
 cdq 	
-mov 	ecx, 2
-div 	ecx
-mov 	r12d, eax
+mov 	ebx, 2
+div 	ebx
+mov 	ecx, eax
 
-mov 	eax, dword [hexPerims + (r12d * 4)]
-add 	eax, dword [hexPerims + (r12d * 4) - 4]
-mov 	ecx, 2
+mov 	eax, dword [hexPerims + (rcx * 4)]
+add 	eax, dword [hexPerims + (rcx * 4) - 4]
+mov 	ebx, 2
 cdq
-div 	ecx
+div 	ebx
 mov 	dword [perimEstMed], eax
 
 ;--------------------------------------------------------------------------------------------
 
-mov 	r12, 0		;counter for the area and perim
+mov 	rcx, 0		;counter for the area and perim
 mov 	eax, dword [hexAreas]
 mov 	dword [areaMax], eax	;setting the min and max to the first val
 mov 	dword [areaMin], eax
 
 areaLoop:
-mov 	eax, dword [hexAreas + (r12 * 4)]
+mov 	eax, dword [hexAreas + (rcx * 4)]
 add 	dword [areaSum], eax
 
 cmp 	dword [areaMax], eax
@@ -169,8 +172,8 @@ mov 	dword [areaMin], eax
 
 continueArea:
 
-inc 	r12
-cmp 	r12d, dword [length]
+inc 	rcx
+cmp 	ecx, dword [length]
 jne 	areaLoop
 
 ;Average and EstMed
@@ -181,15 +184,15 @@ mov 	dword [areaAve], eax
 
 mov 	eax, dword [length]
 cdq 	
-mov 	ecx, 2
-div 	ecx
-mov 	r12d, eax
+mov 	ebx, 2
+div 	ebx
+mov 	ecx, eax
 
-mov 	eax, dword [hexAreas + (r12d * 4)]
-add 	eax, dword [hexAreas + (r12d * 4) - 4]
-mov 	ecx, 2
+mov 	eax, dword [hexAreas + (rcx * 4)]
+add 	eax, dword [hexAreas + (rcx * 4) - 4]
+mov 	ebx, 2
 cdq
-div 	ecx
+div 	ebx
 mov 	dword [areaEstMed], eax
 
 ; *****************************************************************
