@@ -164,7 +164,7 @@ cdq		;not necessary but good practice I guess lol
 div 	ebx
 mov 	dword [listEstMed], eax
 
-
+mov 	ax, byte [rbx]
 
 ; *****************************************************************
 ;	Done, terminate program.

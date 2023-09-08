@@ -1,0 +1,51 @@
+     1                                 %line 1+1 ast04.asm
+     2                                 
+     3                                 
+     4                                 
+     5                                 
+     6                                 
+     7                                 
+     8                                 
+     9                                 
+    10                                 
+    11                                 [section .data]
+    12                                 
+    13                                 
+    14                                 
+    15                                 NULL equ 0
+    16                                 
+    17                                 TRUE equ 1
+    18                                 FALSE equ 0
+    19                                 
+    20                                 EXIT_SUCCESS equ 0
+    21                                 SYS_exit equ 60
+    22                                 
+    23                                 
+    24                                 
+    25                                 
+    26                                 
+    27                                 
+    28                                 
+    29                                 
+    30                                 [section .text]
+    31                                 [global _start]
+    32                                 _start:
+    33                                 
+    34                                 
+    35                                 
+    36 00000000 BB0E000000             mov ebx, 14
+    37 00000005 8B0B                   mov ecx, dword [rbx]
+    38 00000007 C643040A               mov byte [rbx + 4], 10
+    39                                 
+    40 0000000B 88E2                   mov dl, ah
+    41 0000000D 668B4604               mov ax, word [rsi + 4]
+    42 00000011 668B0C33               mov cx, word [rbx + rsi]
+    43                                 
+    44                                 
+    45                                 
+    46                                 
+    47                                 last:
+    48 00000015 48C7C03C000000          mov rax, SYS_exit
+    49 0000001C 48C7C700000000          mov rdi, EXIT_SUCCESS
+    50 00000023 0F05                    syscall
+    51                                 

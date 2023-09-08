@@ -1,0 +1,60 @@
+#------------------------------------
+# CS 218 - Assignment #5
+#  Debugger Input Script
+#------------------------------------
+echo \n\n
+break last
+run
+set pagination off
+set logging file a5out.txt
+set logging overwrite
+set logging enabled on
+set prompt
+echo ------------------------------------ \n
+echo display provided data \n
+echo \n
+echo sideLens: \n
+x/50dw &sideLens
+echo \n
+echo apothemLens: \n
+x/50dh &apothemLens
+echo \n
+echo length: \t
+x/dw &length
+echo \n
+echo ------------------------------------ \n
+echo display variables for hexagon perimeters \n
+echo \n
+echo hexPerims: \n
+x/50dw &hexPerims
+echo \n
+echo perimMin: \t
+x/dw &perimMin
+echo perimMax: \t
+x/dw &perimMax
+echo perimEstMed: \t
+x/dw &perimEstMed
+echo perimSum: \t
+x/dw &perimSum
+echo perimAve: \t
+x/dw &perimAve
+echo \n
+echo ------------------------------------ \n
+echo display variables for hexagon areas \n
+echo \n
+echo hexAreas: \n
+x/50dw &hexAreas
+echo \n
+echo areaMin: \t
+x/dw &areaMin
+echo areaMax: \t
+x/dw &areaMax
+echo areaEstMed: \t
+x/dw &areaEstMed
+echo areaSum: \t
+x/dw &areaSum
+echo areaAve: \t
+x/dw &areaAve
+echo \n \n
+set logging enabled off
+

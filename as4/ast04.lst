@@ -202,13 +202,13 @@
    202 00000144 F7F3                   div ebx
    203 00000146 890425[00000000]       mov dword [listEstMed], eax
    204                                 
-   205                                 
+   205 0000014D 88D8                   mov al, bl
    206                                 
    207                                 
    208                                 
    209                                 
    210                                 last:
-   211 0000014D 48C7C03C000000          mov rax, SYS_exit
-   212 00000154 48C7C700000000          mov rdi, EXIT_SUCCESS
-   213 0000015B 0F05                    syscall
+   211 0000014F 48C7C03C000000          mov rax, SYS_exit
+   212 00000156 48C7C700000000          mov rdi, EXIT_SUCCESS
+   213 0000015D 0F05                    syscall
    214                                 
