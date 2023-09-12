@@ -1,9 +1,9 @@
 ; *****************************************************************
-;  Name: <your name>
-;  NSHE_ID: 
-;  Section: 
+;  Name: Steven Foajs
+;  NSHE_ID: 2001342715
+;  Section: 1003
 ;  Assignment: 6
-;  Description:	
+;  Description:	Base conversions and using macros
 
 ; =====================================================================
 ;  STEP #2
@@ -35,6 +35,53 @@
 
 
 ;	YOUR CODE GOES HERE
+mov 	r12, 0 ;Counter for aSernaryLength string
+mov 	r13, 0 ;Count for non-whitespace
+mov 	rax, 0
+lea  	r15, [%1] ;store the address of the list
+
+%%whitespace:
+mov 	al, byte [r15 + r12]	;Placing first char of the string in al
+
+inc 	r12
+cmp 	al, 32
+je 		%%whitespace
+
+mov 	byte [tempString + r13], al
+inc 	r13
+cmp 	r12, STR_LENGTH
+jne 	%%whitespace
+
+;Concatentate the chars and convert to digits
+mov 	r12, 0
+dec 	r13		;ignore whitespace
+mov 	r14, r13 ;counter for exponent
+dec 	r14
+mov 	r8b, 6
+%%toDigit:
+
+movzx 	eax, byte [tempString + r12]
+sub 	eax, 48 	;Converts char to digit
+
+cmp 	r14, 0
+jne 	%%exp
+jmp 	%%continue
+
+%%exp:
+mul 	r8b
+dec 	r14
+cmp 	r14, 0
+jne 	%%exp
+
+%%continue:
+add 	dword [%2], eax
+
+inc 	r12
+dec 	r13
+mov 	r14, r13
+dec 	r14
+cmp 	r13, 0
+jne 	%%toDigit
 
 
 %endmacro
@@ -64,7 +111,39 @@
 
 
 ;	YOUR CODE GOES HERE
+mov 	r12, 0	;count of chars
+mov 	r13, 10
+mov 	eax, %1
+%%toString:
+cdq
+div 	r13d
+add 	edx, 48
+mov 	byte [tempString + r12], dl
+inc 	r12
+cmp 	eax, 0
+jne 	%%toString
 
+dec 	r12
+mov 	r13, 0
+mov 	r14, STR_LENGTH
+dec 	r14b	;ignores the NULL terminator
+sub 	r14b, r12b	;gets the amount of whitespace 
+
+%%insertWS:
+mov 	byte [%2 + r13], 32
+inc 	r13b
+cmp 	r13b, r14b
+jne 	%%insertWS
+
+%%moveChars:	;Placing the chars from tempString into perimSumString
+mov 	al, byte [tempString + r12]
+mov 	byte [%2 + r13], al
+dec 	r12
+inc 	r13
+cmp 	r12, STR_LENGTH
+jne 	%%moveChars
+
+mov 	byte[%2 + r13], NULL ;placing the NULL at the end of the string
 
 %endmacro
 
@@ -232,21 +311,44 @@ whitespace:
 mov 	al, byte [aSenaryLength + r12]	;Placing first char of the string in al
 
 inc 	r12
-cmp 	r12, 0
+cmp 	al, 32
 je 		whitespace
-;Take the char and convert it to ascii digit
-sub 	al, 48
-mov 	byte [tempString + r13]
-inc 	r13
 
-cmp 	r12, NULL
+mov 	byte [tempString + r13], al
+inc 	r13								;counts actual chars
+cmp 	r12, STR_LENGTH
 jne 	whitespace
 
-;concatentate tempString
-concatentate:
+;Concatentate the chars and convert to digits
+mov 	r12, 0
+dec 	r13			;ignore whitespace
+mov 	r14, r13 	;counter for exponent
+dec 	r14			;n-1
+mov 	cl, 6
+toDigit:
 
-mov 	al, byte 
+movzx 	eax, byte [tempString + r12]
+sub 	eax, 48 	;Converts char to digit
 
+cmp 	r14, 0
+jne 	exp
+jmp 	continue
+
+exp:
+mul 	cl
+dec 	r14
+cmp 	r14, 0
+jne 	exp
+
+continue:
+add 	byte [length], al
+
+inc 	r12
+dec 	r13
+mov 	r14, r13
+dec 	r14
+cmp 	r13, 0
+jne 	toDigit
 
 ; -----
 ;  Convert radii from ASCII/senary format to integer.
@@ -315,7 +417,40 @@ skipNewline:
 
 
 ;	YOUR CODE GOES HERE
+mov 	r12, 0 ;counter for perimsArray
+mov 	eax, dword [perimsArray]
+mov 	dword [perimMin], eax
+mov 	dword [perimMax], eax
+perimsLoop:
+mov 	eax, dword [perimsArray + r12 * 4]
+add 	dword [perimSum], eax
 
+cmp 	dword [perimMin], eax
+ja 		swapMin
+jmp 	checkMax
+
+swapMin:
+mov 	dword [perimMin], eax
+
+checkMax:
+cmp 	dword [perimMax], eax
+jb 		swapMax
+jmp 	skipMax
+
+swapMax:
+mov 	dword [perimMax], eax
+
+skipMax:
+inc 	r12
+cmp 	r12b, byte [length]
+jne 	perimsLoop
+
+;Calculate average
+mov 	eax, dword [perimSum]
+movzx	ecx, byte [length]
+cdq
+div 	ecx
+mov 	dword [perimAve], eax
 
 ; -----
 ;  STEP #4
@@ -332,7 +467,39 @@ skipNewline:
 
 
 ;	YOUR CODE GOES HERE
+mov 	r12, 0	;count of chars
+mov 	r13, 10
+mov 	eax, dword [perimSum]
+toString:
+cdq
+div 	r13d
+add 	edx, 48
+mov 	byte [tempString + r12], dl
+inc 	r12
+cmp 	eax, 0
+jne 	toString
 
+dec 	r12
+mov 	r13, 0
+mov 	r14, STR_LENGTH
+dec 	r14b	;ignores the NULL terminator
+sub 	r14b, r12b	;gets the amount of whitespace 
+
+insertWS:
+mov 	byte [perimSumString + r13], 32
+inc 	r13b
+cmp 	r13b, r14b
+jne 	insertWS
+
+moveChars:	;Placing the chars from tempString into perimSumString
+mov 	al, byte [tempString + r12]
+mov 	byte [perimSumString + r13], al
+dec 	r12
+inc 	r13
+cmp 	r12, STR_LENGTH
+jne 	moveChars
+
+mov 	byte[perimSumString + r13], NULL ;placing the NULL at the end of the string
 
 ;	print the perimSumString (set above).
 	printString	perimSumString
