@@ -54,9 +54,9 @@ jne 	%%whitespace
 
 ;Concatentate the chars and convert to digits
 mov 	r12, 0
-dec 	r13		;ignore whitespace
-mov 	r14, r13 ;counter for exponent
-dec 	r14
+dec 	r13			;ignore whitespace
+mov 	r14, r13 	;counter for exponent
+dec 	r14			;n-1
 mov 	r8b, 6
 %%toDigit:
 
