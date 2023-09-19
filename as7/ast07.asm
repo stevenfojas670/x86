@@ -3,7 +3,8 @@
 ;  NSHE_ID: 2001342715
 ;  Section: 1003
 ;  Assignment: 7
-;  Description:
+;  Description: Translating a sorting algorithm from a high level language into x86.
+; 	Using a sorting algo, finding the min, max, sum, average, and median of a list
 
 ; Sort a list of number using the odd/even sort algorithm.
 ; Also finds the minimum, median, maximum, and average of the list.
@@ -15,6 +16,45 @@
 
 
 ;	YOUR CODE GOES HERE
+
+%macro int2aSenary 2
+
+;	YOUR CODE GOES HERE
+mov 	r12, 0	;count of chars
+mov 	r13, 10
+mov 	eax, %1
+%%toString:
+cdq
+div 	r13d
+add 	edx, 48
+mov 	byte [tmpString + r12], dl
+inc 	r12
+cmp 	eax, 0
+jne 	%%toString
+
+dec 	r12
+mov 	r13, 0
+mov 	r14, STR_LENGTH
+dec 	r14b	;ignores the NULL terminator
+sub 	r14b, r12b	;gets the amount of whitespace 
+
+%%insertWS:
+mov 	byte [%2 + r13], 32
+inc 	r13b
+cmp 	r13b, r14b
+jne 	%%insertWS
+
+%%moveChars:	;Placing the chars from tmpString into perimSumString
+mov 	al, byte [tmpString + r12]
+mov 	byte [%2 + r13], al
+dec 	r12
+inc 	r13
+cmp 	r12, STR_LENGTH
+jne 	%%moveChars
+
+mov 	byte[%2 + r13], NULL ;placing the NULL at the end of the string
+
+%endmacro
 
 
 
@@ -137,7 +177,7 @@ lst	dd	  147,  1123,  2245,  4440,   165
 	dd	 5527,  6364,   330,   172,    24
 	dd	 7525,  5616,  5662,  6328,  2342
 
-len	dd	200
+len	dd	10
 
 
 min	dd	0
@@ -148,7 +188,7 @@ avg	dd	0
 
 ; -----
 ;  Misc. data definitions (if any).
-
+isSorted 	db 	FALSE
 
 
 ; -----
@@ -203,8 +243,38 @@ _start:
 
 ;	YOUR CODE GOES HERE
 
+while:
+mov 	byte [isSorted], 1	;isSorted = true
+mov 	r12, 1	;i = 1 for first loop
+mov 	r13d, dword [len]
+sub 	r13d, 2	;len-2
+forLoop1:
 
+;if statement
 
+mov 	ebx, dword [lst + r12 * 4] ;list[i]
+mov 	ecx, dword [lst + ((r12 * 4) + 4)] ;list[i + 1]
+
+cmp 	ebx, ecx		;if list[i] <= list[i + 1], then increment, else do swappy stuff
+jbe 	loopCondition1
+
+;Swap
+mov 	dword [lst + r12 * 4], ecx
+mov 	dword [lst + ((r12 * 4) + 4)], ebx
+
+mov 	byte [isSorted], 0
+
+loopCondition1:
+cmp 	r12d, r13d ;i < len-2
+jb 		incLoop1
+jmp 	continue
+incLoop1:
+add 	r12d, 2 ;i+=2
+jmp 	forLoop1
+
+continue:
+
+;If isSorted is true then code proceeds
 
 ; ******************************
 ;  Find stats
@@ -213,8 +283,52 @@ _start:
 
 ;	YOUR CODE GOES HERE
 
+mov 	r12, 0 ;counter for perimsArray
+mov 	eax, dword [lst + r12 * 4]
+mov 	dword [min], eax
+mov 	dword [max], eax
+perimsLoop:
+mov 	eax, dword [lst + r12 * 4]
+add 	dword [sum], eax
 
+cmp 	dword [min], eax
+ja 		swapMin
+jmp 	checkMax
 
+swapMin:
+mov 	dword [min], eax
+
+checkMax:
+cmp 	dword [max], eax
+jb 		swapMax
+jmp 	skipMax
+
+swapMax:
+mov 	dword [max], eax
+
+skipMax:
+inc 	r12
+cmp 	r12d, dword [len]
+jne 	perimsLoop
+
+;Calculate average
+mov 	eax, dword [sum]
+mov		ecx, dword [len]
+cdq
+div 	ecx
+mov 	dword [avg], eax
+
+;Calculate median
+mov 	r12, 0
+mov 	r12d, dword [len]
+shr 	r12d, 1	;Divides by 2
+
+mov 	ecx, dword [lst + ((r12 * 4) - 4)]
+mov 	ebx, dword [lst + r12 * 4]
+
+add 	ecx, ebx
+shr 	ecx, 1
+mov 	dword [med], ecx
 
 
 ; ******************************
