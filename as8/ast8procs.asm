@@ -344,20 +344,35 @@ estimatedSkew:
 	push 	r14
 
 	mov 	r12, 0
-	dec 	esi		;len - 1
+	mov  	r14, rsi		;len - 1
+	dec 	r14
+	mov 	qword [qTmp], 0
+	mov 	qword [qSum], 0
 
 	skewLoop:
 	;(list[i] - average)^2
-	mov 	r13d, dword [rdi + r12 * 4]	;list[i]
-	sub 	r13d, edx		;list[i] - average
-	shl 	r13d, 1			;performs a square on r13
-	add 	r14, r13		;summation
+	mov 	eax, dword [rdi + r12 * 4]
+	sub 	eax, edx				;edx is the average
+	push 	rdx
+	cdq
+	mul 	eax						;Squaring parenthesis
+	mov 	dword [qTmp], eax
+	mov 	r13, qword [qTmp]
+	add 	qword [qSum], r13		;adding to the summation
+	pop 	rdx
 	inc 	r12
-	cmp 	r12d, esi
-	jb 		skewLoop
+	cmp 	r12, r14
+	jbe	 	skewLoop
 	;Divide the summation by len * 3
-	
-
+	nop		;debugging point
+	mov 	r12, 3
+	mov 	eax, esi
+	mul 	r12d
+	mov 	r12, rax	;holds len * 3
+	mov 	rax, qword [qSum]
+	cqo
+	div 	r12
+	nop
 	pop 	r14
 	pop 	r13
 	pop		r12
