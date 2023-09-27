@@ -23,7 +23,7 @@
     23                                 
     24                                 
     25                                 
-    26                                 
+    26 00000000 10270000               rand dd 10000
     27                                 
     28                                 
     29                                 
@@ -33,19 +33,14 @@
     33                                 
     34                                 
     35                                 
-    36 00000000 BB0E000000             mov ebx, 14
-    37 00000005 8B0B                   mov ecx, dword [rbx]
-    38 00000007 C643040A               mov byte [rbx + 4], 10
+    36 00000000 B80A000000             mov eax, 10
+    37 00000005 D1E8                   shr eax, 1
+    38                                 
     39                                 
-    40 0000000B 88E2                   mov dl, ah
-    41 0000000D 668B4604               mov ax, word [rsi + 4]
-    42 00000011 668B0C33               mov cx, word [rbx + rsi]
-    43                                 
-    44                                 
-    45                                 
+    40                                 
+    41                                 
+    42                                 last:
+    43 00000007 48C7C03C000000          mov rax, SYS_exit
+    44 0000000E 48C7C700000000          mov rdi, EXIT_SUCCESS
+    45 00000015 0F05                    syscall
     46                                 
-    47                                 last:
-    48 00000015 48C7C03C000000          mov rax, SYS_exit
-    49 0000001C 48C7C700000000          mov rdi, EXIT_SUCCESS
-    50 00000023 0F05                    syscall
-    51                                 

@@ -32,16 +32,8 @@ _start:
 
 ; ----------------------------------------------
 
-mov 	ebx, 14
-mov 	ecx, dword [rbx]
-mov 	byte [rbx + 4], 10
-;mov 	10, rcx illegal operation
-;Destination cannot be an immediate
-mov 	dl, ah
-mov 	ax, word [rsi + 4]
-mov 	cx, word [rbx + rsi]
-;mov 	ax, byte [rbx] illegal operation
-;Cannot move byte into word
+mov 	eax, 10
+shr 	eax, 1
 
 ; *****************************************************************
 ;	Done, terminate program.
