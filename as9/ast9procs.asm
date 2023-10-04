@@ -70,6 +70,8 @@ BUFFSIZE	equ	50			; 50 chars including NULL
 
 ; -----
 ;  NO static local variables allowed...
+section 	.bss
+chr 		resb 	1 		
 
 
 ; ****************************************************************************
@@ -120,66 +122,75 @@ readSenaryNum:
 ;       ignore line
 ;If any errors return codes in eax
 
-push    rax
-push    rdi
-push    rsi
-push    rdx
-;All system service registers
-push    rbx ;will store the char
-push    r11
-push    r12
-push    r13 
-push    r15
+push 	r11
+push 	r12
+push 	r13
+push 	r14
+push 	r15
 
-mov     r12, 0  ;count for chars inputted
-mov     r13, BUFFSIZE
-dec     r13
-
+mov 	r12, 0	;counter for chars
+mov 	r13, rdi
+mov 	r11, 0
 readChars:
-mov     rax, SYS_read
-mov     rdi, STDIN
-mov     rsi, rbx
-mov     rdx, 1
+mov 	rax, SYS_read
+mov 	rdi, STDIN
+lea 	rsi, byte [chr]
+mov 	rdx, 1
 syscall
 
-mov     al, bl
-cmp     al, LF
-je      readDone
+mov 	al, byte [chr]
+cmp 	al, LF
+je		readDone
 
-cmp     al, SPACE
-je      readChars
+cmp 	al, SPACE
+je 		readChars
 
-inc     r12
-cmp     r12, r13
-jae      readChars       ;Once r12 is greater than buffsize we just wait for LF
+inc 	r12
+cmp 	r12, BUFFSIZE
+jae 	readChars
 
-;Convert to senary
-sub     al, 48      ;convert to int
-mov     r15, 6
-div     r15b
-mov     byte [rdi], al      ;placing the char into the &newNumber
+mov 	byte [r13], al
+inc 	r13
 
-jmp     readChars
+jmp 	readChars
 readDone:
-pop     rdx
-pop     rsi
-pop     rdi
-pop     rax
+mov 	byte [r13], NULL
 
-inc     r12
-cmp     r12, BUFFSIZE
-ja      tooLong
-mov     byte [rdi], NULL
+mov 	r11, 0
+dec 	r12			;ignore whitespace
+mov 	r14, r12	;counter for exponent
+dec 	r14			;n-1
+mov 	r15, 10
 
-;We have the senary string, convert to int to check if the number is within range
-tooLong:
-mov     eax, 4
-pop     r15
-pop     r13
-pop     r12   
-pop     r11  
-pop     rbx
+toDigit:
+mov 	al, byte [r13 + r11]
+sub 	al, 48
 
+cmp 	r14, 0
+jne 	exp
+jmp 	continue3
+
+exp:
+mul 	r15b
+dec 	r14
+cmp 	r14, 0
+jne 	exp
+
+continue3:
+add 	dword [r13], eax
+
+inc 	r11
+dec 	r12
+mov 	r14, r13
+dec 	r14
+cmp 	r12, 0
+jne 	toDigit
+
+pop 	r15
+pop 	r14
+pop 	r13
+pop 	r12
+pop 	r11
 
 ret
 
