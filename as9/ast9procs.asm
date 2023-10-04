@@ -103,6 +103,85 @@ section	.text
 
 ;	YOUR CODE GOES HERE
 
+global readSenaryNum
+readSenaryNum:
+
+;&numberRead is actually just the return address of the converted value
+;we are reading into numberRead
+;rdi input location
+;rsi address where to store characters read
+;rdx number of chars to read
+;Convert each char into a senary number
+;ignore whitespace
+;MIN_NUM <= number <= MIN_MAX (Converted number)
+;Input must be < BUFFSIZE 
+;if (input.size() == BUFFSIZE)
+;   if(input[BUFFSIZE] != NULL)
+;       ignore line
+;If any errors return codes in eax
+
+push    rax
+push    rdi
+push    rsi
+push    rdx
+;All system service registers
+push    rbx ;will store the char
+push    r11
+push    r12
+push    r13 
+push    r15
+
+mov     r12, 0  ;count for chars inputted
+mov     r13, BUFFSIZE
+dec     r13
+
+readChars:
+mov     rax, SYS_read
+mov     rdi, STDIN
+mov     rsi, rbx
+mov     rdx, 1
+syscall
+
+mov     al, bl
+cmp     al, LF
+je      readDone
+
+cmp     al, SPACE
+je      readChars
+
+inc     r12
+cmp     r12, r13
+jae      readChars       ;Once r12 is greater than buffsize we just wait for LF
+
+;Convert to senary
+sub     al, 48      ;convert to int
+mov     r15, 6
+div     r15b
+mov     byte [rdi], al      ;placing the char into the &newNumber
+
+jmp     readChars
+readDone:
+pop     rdx
+pop     rsi
+pop     rdi
+pop     rax
+
+inc     r12
+cmp     r12, BUFFSIZE
+ja      tooLong
+mov     byte [rdi], NULL
+
+;We have the senary string, convert to int to check if the number is within range
+tooLong:
+mov     eax, 4
+pop     r15
+pop     r13
+pop     r12   
+pop     r11  
+pop     rbx
+
+
+ret
 
 
 ; ****************************************************************************
@@ -145,7 +224,71 @@ section	.text
 
 ;	YOUR CODE GOES HERE
 
+global oddEvenSort
+oddEvenSort:
 
+push 	r12
+push 	r13
+push 	rbx
+push 	rcx
+push    r15
+
+while:
+mov 	r15b, 1	;isSorted = true
+mov 	r12, 1	;i = 1 for first loop
+mov 	r13d, esi
+sub 	r13d, 1	;len-2
+
+forLoop1:
+cmp 	r12d, r13d
+jae 	nextLoop
+
+;if statement
+mov 	ebx, dword [rdi + r12 * 4]	;list[i]
+mov 	ecx, dword [rdi + ((r12 * 4) + 4)] ;list[i + 1]
+
+cmp 	ebx, ecx	;if(list[i] < list[i+1])
+jbe 		continue1
+
+mov 	dword [rdi + r12 * 4], ecx	;list[i] = list[i+1]
+mov 	dword [rdi + ((r12 * 4) + 4)], ebx ;list[i+1] = list[i]
+mov 	r15b, 0	;sorted = false
+
+continue1:
+add 	r12, 2	;i+=2
+jmp 	forLoop1
+nextLoop:
+mov 	r12, 0
+
+forLoop2:
+cmp 	r12d, r13d
+jae 	whileCondition
+
+;if statement
+mov 	ebx, dword [rdi + r12 * 4]	;list[i]
+mov 	ecx, dword [rdi + ((r12 * 4) + 4)] ;list[i + 1]
+
+cmp 	ebx, ecx	;if(list[i] < list[i+1])
+jbe 		continue2
+
+mov 	dword [rdi + r12 * 4], ecx	;list[i] = list[i+1]
+mov 	dword [rdi + ((r12 * 4) + 4)], ebx ;list[i+1] = list[i]
+mov 	r15b, 0	;sorted = false
+
+continue2:
+add 	r12, 2
+jmp 	forLoop2
+whileCondition:
+cmp 	r15b, 0
+je 		while
+
+pop     r15
+pop 	rcx
+pop 	rdx
+pop 	r13
+pop 	r12
+
+ret
 
 
 ; *******************************************************************************
@@ -175,6 +318,65 @@ section	.text
 
 ;	YOUR CODE GOES HERE
 
+global listStats
+listStats:
+
+
+;	YOUR CODE GOES HERE
+	push 	rbp
+	mov 	rbp, rsp
+	push 	r12
+	push 	r13
+
+	mov 	r12d, dword [rdi]			;placing max into max var
+	mov 	dword [rcx], r12d
+	mov 	r12d, dword [rdi + ((rsi * 4) - 4)]	;placing min into min var
+	mov 	dword [rdx], r12d
+
+	mov 	r12, 0
+	mov 	r13, 0
+	sumLoop:
+	add 	r13d, dword [rdi + r12 * 4]
+	inc 	r12
+	cmp 	r12, rsi
+	jb		sumLoop
+	mov 	dword [r9], r13d
+	;Calculate the average
+	mov 	r13d, dword [rbp + 16]
+	mov 	eax, dword [r9]
+	cdq
+	div 	esi
+	mov 	dword [r13], eax	;placing the average into the ave var
+
+	;Checking if the list is even or odd
+	push 	rdx			;preserving the minimum to use rdx for division
+	mov 	eax, esi
+	cdq 	
+	mov 	r12, 2
+	div 	r12
+	cmp 	rdx, 1
+	jne 	evenLength1
+
+	mov 	r13, r8
+	mov 	r12d, dword [rdi + rax * 4]
+	mov 	dword [r13], r12d	;getting median for odd length array
+	jmp 	statsDone
+
+	evenLength1:
+	mov 	r12, 0
+	mov 	r12d, dword [rdi + rax * 4]
+	add 	r12d, dword [rdi + ((rax * 4) - 4)]
+	shr 	r12d, 1
+	mov 	r13, r8
+	mov 	dword [r13], r12d	;getting median for even length array
+
+	statsDone:
+	pop 	rdx
+	pop 	r13
+	pop 	r12
+	pop 	rbp
+
+	ret
 
 ; *******************************************************************************
 ;  Find the estimated median (before sort)
@@ -198,7 +400,38 @@ section	.text
 
 ;	YOUR CODE GOES HERE
 
+global estimatedMedian
+estimatedMedian:
 
+
+;	YOUR CODE GOES HERE
+	push 	rdx
+	push 	r12
+	mov 	eax, esi	;placing length
+	cdq
+	mov 	r12, 2
+	div 	r12d
+	cmp 	rdx, 1		;Checking of the remainder is 0 to determine if it is even
+	jne 	evenLength2
+	
+	;Calculating odd
+	mov 	r12, rsi	;placing length
+	shr 	r12, 1		;dividing by 2
+	mov 	eax, dword [rdi + r12 * 4]
+	jmp 	medianDone
+
+	evenLength2:
+	mov 	r12, rsi	;placing length
+	shr 	r12, 1		;dividing by 2
+	mov 	eax, dword [rdi + r12 * 4]
+	add 	eax, dword [rdi + ((r12 * 4) - 4)]
+	shr 	eax, 1		;dividing by 2
+
+	medianDone:
+	pop 	r12
+	pop 	rdx
+
+	ret
 
 ; ****************************************************************************
 ;  Function to calculate the estimated skew value based on the 
@@ -227,7 +460,56 @@ section	.text
 
 ;	YOUR CODE GOES HERE
 
+global estimatedSkew
+estimatedSkew:
 
+
+;	YOUR CODE GOES HERE
+;Summation is just a loop, so keep going for x long iterations
+
+	push 	r12 	;this will be the counter
+	push 	r13 	;will be len - 1
+	push 	r14
+    push    r15     ;qTmp
+    push    r10     ;qSum
+
+	mov 	r12, 0
+	mov  	r14, rsi		;len - 1
+	dec 	r14
+	mov 	r15, 0
+	mov 	r10, 0
+
+	skewLoop:
+	;(list[i] - average)^2
+	mov 	eax, dword [rdi + r12 * 4]
+	sub 	eax, edx				;edx is the average
+	push 	rdx
+	cdq
+	mul 	eax						;Squaring parenthesis
+	mov 	r15d, eax
+	mov 	r13, r15
+	add 	r10, r13		;adding to the summation
+	pop 	rdx
+	inc 	r12
+	cmp 	r12, r14
+	jbe	 	skewLoop
+	;Divide the summation by len * 3
+	nop		;debugging point
+	mov 	r12, 3
+	mov 	eax, esi
+	mul 	r12d
+	mov 	r12, rax	;holds len * 3
+	mov 	rax, r10
+	cqo
+	div 	r12
+	nop
+    pop     r10
+    pop     r15
+	pop 	r14
+	pop 	r13
+	pop		r12
+
+	ret
 
 ; ****************************************************************************
 
