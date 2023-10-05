@@ -409,9 +409,9 @@
    409 000001A1 4155                    push r13
    410                                 
    411 000001A3 448B27                  mov r12d, dword [rdi]
-   412 000001A6 448921                  mov dword [rcx], r12d
+   412 000001A6 448922                  mov dword [rdx], r12d
    413 000001A9 448B64B7FC              mov r12d, dword [rdi + ((rsi * 4) - 4)]
-   414 000001AE 448922                  mov dword [rdx], r12d
+   414 000001AE 448921                  mov dword [rcx], r12d
    415                                 
    416 000001B1 49C7C400000000          mov r12, 0
    417 000001B8 49C7C500000000          mov r13, 0
@@ -422,11 +422,11 @@
    422 000001C9 72F2                    jb sumLoop
    423 000001CB 458929                  mov dword [r9], r13d
    424                                 
-   425 000001CE 4C8D6D10                lea r13, dword [rbp + 16]
+   425 000001CE 4C8B6D10                mov r13, qword [rbp + 16]
    426 000001D2 418B01                  mov eax, dword [r9]
    427 000001D5 99                      cdq
    428 000001D6 F7F6                    div esi
-   429 000001D8 41894500                mov dword [r13], eax
+   429 000001D8 49894500                mov qword [r13], rax
    430                                 
    431                                 
    432 000001DC 52                      push rdx

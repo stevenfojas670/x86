@@ -384,13 +384,13 @@ ret
 ;	listStats(list, len, &min, &max, &med)
 
 ;  Arguments Passed:
-;	- list, addr
-;	- length, value
-;	- minimum, addr
-;	- maximum, addr
-;	- median, addr
-;	- sum, addr
-;	- ave, addr (stack)
+;	- list, addr rdi
+;	- length, value rsi
+;	- minimum, addr rdx
+;	- maximum, addr rcx
+;	- median, addr r8
+;	- sum, addr r9
+;	- ave, addr (stack) rbp + 16
 ;  Returns:
 ;	minimum, maximum, median, sum, and average (via reference)
 
@@ -407,10 +407,10 @@ listStats:
 	push 	r12
 	push 	r13
 
-	mov 	r12d, dword [rdi]			;placing max into max var
-	mov 	dword [rcx], r12d
-	mov 	r12d, dword [rdi + ((rsi * 4) - 4)]	;placing min into min var
-	mov 	dword [rdx], r12d
+	mov 	r12d, dword [rdi]
+	mov 	dword [rdx], r12d		;placing min into min var
+	mov 	r12d, dword [rdi + ((rsi * 4) - 4)] 
+	mov 	dword [rcx], r12d	;placing max into max var
 
 	mov 	r12, 0
 	mov 	r13, 0
@@ -421,11 +421,11 @@ listStats:
 	jb		sumLoop
 	mov 	dword [r9], r13d
 	;Calculate the average
-	lea 	r13, dword [rbp + 16]
+	mov 	r13, qword [rbp + 16]
 	mov 	eax, dword [r9]
 	cdq
 	div 	esi
-	mov 	dword [r13], eax	;placing the average into the ave var
+	mov	qword [r13], rax	;placing the average into the ave var
 
 	;Checking if the list is even or odd
 	push 	rdx			;preserving the minimum to use rdx for division
