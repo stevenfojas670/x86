@@ -1,9 +1,9 @@
 ; *****************************************************************
-;  Name: 
-;  NSHE_ID: 
-;  Section:
+;  Name: Steven Fojas
+;  NSHE_ID: 2001342715
+;  Section: 1003
 ;  Assignment: 9
-;  Description: 
+;  Description: Using system services and working with high level languages
 
 ; --------------------------------------------------------------------
 ;  Write some assembly language functions.
@@ -70,9 +70,6 @@ BUFFSIZE	equ	50			; 50 chars including NULL
 
 ; -----
 ;  NO static local variables allowed...
-section 	.bss
-chr 		resb 	1 		
-
 
 ; ****************************************************************************
 
@@ -122,25 +119,28 @@ readSenaryNum:
 ;       ignore line
 ;If any errors return codes in eax
 
-push 	r11
-push 	r12
-push 	r13
+push 	rdi
+push 	rsi
+push 	rdx
+push 	rbx			;stores newNumber
+push 	r12			;stores size of input
+push 	r11			;counter
 push 	r14
-push 	r15
+push 	rcx			;stores 10
 
-mov 	r12, 0	;counter for chars
-mov 	r13, rdi
-mov 	r11, 0
+mov 	r12, 0 		;counter for chars
+mov 	rbx, rdi
 readChars:
 mov 	rax, SYS_read
 mov 	rdi, STDIN
-lea 	rsi, byte [chr]
+lea 	rsi, byte [rbx]
 mov 	rdx, 1
 syscall
 
-mov 	al, byte [chr]
+mov 	al, byte [rbx]
+
 cmp 	al, LF
-je		readDone
+je 		readDone
 
 cmp 	al, SPACE
 je 		readChars
@@ -149,48 +149,116 @@ inc 	r12
 cmp 	r12, BUFFSIZE
 jae 	readChars
 
-mov 	byte [r13], al
-inc 	r13
+mov 	byte [rbx], al
+inc 	rbx
 
 jmp 	readChars
 readDone:
-mov 	byte [r13], NULL
+
+cmp 	r12, BUFFSIZE - 1
+ja 		overFlow
+
+cmp 	r12, 0
+je 		empty
+
+mov 	r11, 0	
+returnNewNumber:	;Reverting rbx back to rbx[0]
+dec 	rbx
+inc 	r11
+cmp 	r11, r12
+jb 		returnNewNumber
+
+;Debugging to see if the values were properly placed into rbx
+
+mov 	rax, 0
+mov 	r11, 0
+stringLoop:
+mov 	al, byte [rbx + r11]
+inc 	r11
+cmp 	r11, r12
+jb 		stringLoop
+
+;Debugging done
 
 mov 	r11, 0
-dec 	r12			;ignore whitespace
-mov 	r14, r12	;counter for exponent
-dec 	r14			;n-1
-mov 	r15, 10
+mov 	rdx, r12
+dec 	rdx 		;n-1
+mov 	rcx, 10		;base 10
+mov 	r14, 0
 
 toDigit:
-mov 	al, byte [r13 + r11]
-sub 	al, 48
+movzx 	eax, byte [rbx + r11]
 
-cmp 	r14, 0
+cmp 	al, 48
+jb		invalidNumber
+
+cmp 	al, 54
+jae		invalidNumber
+sub 	eax, 48
+
+cmp 	rdx, 0
 jne 	exp
 jmp 	continue3
 
 exp:
-mul 	r15b
-dec 	r14
-cmp 	r14, 0
+mul 	cl
+dec 	rdx
+cmp 	rdx, 0
 jne 	exp
 
 continue3:
-add 	dword [r13], eax
+add 	r14d, eax
 
 inc 	r11
-dec 	r12
-mov 	r14, r13
-dec 	r14
+dec 	r12			
+mov 	rdx, r12	;Getting the proper size of the string
+dec 	rdx			;decreasing n to do x^n-1
 cmp 	r12, 0
 jne 	toDigit
 
-pop 	r15
+;ERROR CHECKING
+
+cmp 	r14d, MAX_NUM
+ja 		aboveMax
+
+cmp 	r14d, MIN_NUM
+jb		belowMin
+jmp 	success
+
+belowMin:
+mov 	eax, 2
+jmp 	done
+
+aboveMax:
+mov 	eax, 3
+jmp 	done
+
+empty:
+mov 	eax, 5
+jmp 	done
+
+invalidNumber:
+mov 	eax, 1
+jmp 	done
+
+overFlow:
+mov 	eax, 4
+jmp 	done
+
+success:
+mov 	eax, 0
+mov 	qword [rbx], r14
+
+done:
+pop 	rcx
 pop 	r14
-pop 	r13
-pop 	r12
 pop 	r11
+pop 	r12
+pop 	rbx
+pop 	rdx
+pop 	rsi
+pop 	rdi
+
 
 ret
 
@@ -353,7 +421,7 @@ listStats:
 	jb		sumLoop
 	mov 	dword [r9], r13d
 	;Calculate the average
-	mov 	r13d, dword [rbp + 16]
+	lea 	r13, dword [rbp + 16]
 	mov 	eax, dword [r9]
 	cdq
 	div 	esi
