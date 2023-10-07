@@ -119,25 +119,27 @@ readSenaryNum:
 ;       ignore line
 ;If any errors return codes in eax
 
+push 	rbp
 push 	rdi
-push 	rsi
-push 	rdx
 push 	rbx			;stores newNumber
 push 	r12			;stores size of input
 push 	r11			;counter
 push 	r14
 push 	rcx			;stores 10
+mov 	rbp, rsp
+
+;Allocate 50 bytes for the buffer
 
 mov 	r12, 0 		;counter for chars
 mov 	rbx, rdi
 readChars:
 mov 	rax, SYS_read
 mov 	rdi, STDIN
-lea 	rsi, byte [rbx]
+lea 	rsi, byte [rbp + 8]
 mov 	rdx, 1
 syscall
 
-mov 	al, byte [rbx]
+mov 	al, byte [rbp + 8]
 
 cmp 	al, LF
 je 		readDone
@@ -149,36 +151,15 @@ inc 	r12
 cmp 	r12, BUFFSIZE
 jae 	readChars
 
-mov 	byte [rbx], al
-inc 	rbx
-
 jmp 	readChars
 readDone:
+mov 	byte [rbx], NULL
 
-cmp 	r12, BUFFSIZE - 1
+cmp 	r12, BUFFSIZE
 ja 		overFlow
 
 cmp 	r12, 0
 je 		empty
-
-mov 	r11, 0	
-returnNewNumber:	;Reverting rbx back to rbx[0]
-dec 	rbx
-inc 	r11
-cmp 	r11, r12
-jb 		returnNewNumber
-
-;Debugging to see if the values were properly placed into rbx
-
-mov 	rax, 0
-mov 	r11, 0
-stringLoop:
-mov 	al, byte [rbx + r11]
-inc 	r11
-cmp 	r11, r12
-jb 		stringLoop
-
-;Debugging done
 
 mov 	r11, 0
 mov 	rdx, r12
@@ -425,7 +406,7 @@ listStats:
 	mov 	eax, dword [r9]
 	cdq
 	div 	esi
-	mov	qword [r13], rax	;placing the average into the ave var
+	mov		qword [r13], rax	;placing the average into the ave var
 
 	;Checking if the list is even or odd
 	push 	rdx			;preserving the minimum to use rdx for division
