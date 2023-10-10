@@ -137,6 +137,8 @@ push 	r13
 mov 	r12, 0 		;counter for chars
 lea 	rbx, [rbp + 1] 	;actual buffer
 mov 	r15, rdi
+mov 	r13, 0			;non zero and non leading space found flag
+mov 	r14, 0			;mark invalid flag
 readChars:
 mov 	rax, SYS_read
 mov 	rdi, STDIN
@@ -148,6 +150,17 @@ mov 	al, byte [rbp]
 cmp 	al, LF
 je 		readDone
 
+cmp 	r13, 1						;if buffer contains a nonleading space check if current char is a space
+je 		checkNonLeadingSpace
+jmp 	ignoreLeadingSpace
+checkNonLeadingSpace:
+cmp 	al, SPACE
+je 		markInvalid					;space after a regular char, mark invalid
+jmp 	ignoreLeadingSpace
+markInvalid:
+mov 	r14, 1							;non leading space has been found
+ignoreLeadingSpace:
+;ignore leading spaces and mark nonleading spaces invalid
 cmp 	al, SPACE
 je 		readChars
 
@@ -155,12 +168,16 @@ inc 	r12
 cmp 	r12, BUFFSIZE
 jae	 	readChars
 
+mov 	r13, 1				;first non leading space found
 mov 	byte [rbx], al
 inc 	rbx
 
 jmp 	readChars
 readDone:
 mov 	byte [rbx], NULL
+
+cmp 	r14, 1
+je 		invalidNumber
 
 ;Length Check
 cmp 	r12, BUFFSIZE
@@ -169,6 +186,14 @@ jae	 	lengthExceeded
 cmp 	r12, 0
 je 		emptyInput
 
+; if(buffer[0] == "0"){
+; 	for(int i = 0; i < buffer.size(); i++){
+; 		if(buffer[i] != "0"){
+; 			save position
+; 			break
+; 		}
+; 	}
+; }
 lea		rbx, [rbp + 1]
 cmp 	byte [rbx], 48
 je 		ignoreLeadingZero
@@ -191,6 +216,9 @@ mov 	r14, 0
 
 toDigit:
 movzx 	eax, byte [rbx + r11]
+
+cmp 	al, 0
+je 		belowMin
 
 cmp 	al, 48
 jb		invalidNumber
