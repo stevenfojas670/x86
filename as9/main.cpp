@@ -78,8 +78,10 @@ int main()
 
 		switch (status) {
 			case SUCCESS:
+				cout << "New Number: " << newNumber << endl;
 				list[len] = newNumber;
 				len++;
+				cout << "Length: " << len << endl;
 				break;
 			case NOSUCCESS:
 				cout << "Error, invalid number. ";

@@ -66,7 +66,7 @@ ENDOFINPUT	equ	5
 MIN_NUM		equ	1
 MAX_NUM		equ	50000
 
-BUFFSIZE	equ	50			; 50 chars including NULL
+BUFFSIZE	equ	3			; 50 chars including NULL
 
 ; -----
 ;  NO static local variables allowed...
@@ -120,26 +120,27 @@ readSenaryNum:
 ;If any errors return codes in eax
 
 push 	rbp
+mov 	rbp, rsp
+sub 	rbp, BUFFSIZE
+dec 	rbp				;store the char
 push 	rdi
+push 	rdx
 push 	rbx			;stores newNumber
 push 	r12			;stores size of input
 push 	r11			;counter
 push 	r14
 push 	rcx			;stores 10
-mov 	rbp, rsp
 
 ;Allocate 50 bytes for the buffer
-
 mov 	r12, 0 		;counter for chars
 mov 	rbx, rdi
 readChars:
 mov 	rax, SYS_read
 mov 	rdi, STDIN
-lea 	rsi, byte [rbp + 8]
+lea 	rsi, byte [rbp]
 mov 	rdx, 1
 syscall
-
-mov 	al, byte [rbp + 8]
+mov 	al, byte [rbp]
 
 cmp 	al, LF
 je 		readDone
@@ -148,27 +149,57 @@ cmp 	al, SPACE
 je 		readChars
 
 inc 	r12
-cmp 	r12, BUFFSIZE
-jae 	readChars
+cmp 	r12, BUFFSIZE + 1
+jae	 	readChars
+
+mov 	byte [rbp + r12], al
 
 jmp 	readChars
 readDone:
-mov 	byte [rbx], NULL
 
-cmp 	r12, BUFFSIZE
-ja 		overFlow
+;Length Check
+cmp 	r12, BUFFSIZE + 1
+jae	 	lengthExceeded
 
 cmp 	r12, 0
-je 		empty
+je 		emptyInput
 
+mov 	byte [rbp + r12], NULL
+
+;if(arr[0] == 0){
+;	for(int i = 0 i < arr.size() i++){
+;		if(arr[i] != 0){
+;			firstNonZero = i
+;			break
+;		}
+;	}
+;	newSize = arr.size() - firstNonZero
+;}
+;ignore leading zeroes
+mov 	r11, 1
+cmp 	byte [rbp + 1], 48
+je		ignoreLeadingZero
+jmp 	skip
+ignoreLeadingZero:
 mov 	r11, 0
+mov 	r14, 0
+findZero:
+mov 	al, byte [rbp + r11]
+cmp 	al, 48
+jne 	skip
+inc 	r11
+cmp 	r11, r12
+jne 	findZero
+skip:
+sub 	r12, r11		;size - zeroCount
+
 mov 	rdx, r12
 dec 	rdx 		;n-1
-mov 	rcx, 10		;base 10
+mov 	rcx, 6		;base  
 mov 	r14, 0
 
 toDigit:
-movzx 	eax, byte [rbx + r11]
+movzx 	eax, byte [rbp + r11]
 
 cmp 	al, 48
 jb		invalidNumber
@@ -197,14 +228,16 @@ dec 	rdx			;decreasing n to do x^n-1
 cmp 	r12, 0
 jne 	toDigit
 
-;ERROR CHECKING
+cmp 	r14, MIN_NUM
+jb	 	belowMin
 
-cmp 	r14d, MAX_NUM
-ja 		aboveMax
+cmp 	r14, MAX_NUM
+jae 	aboveMax
 
-cmp 	r14d, MIN_NUM
-jb		belowMin
-jmp 	success
+;Success
+mov 	dword [rbx], r14d
+mov 	eax, 0
+jmp 	done
 
 belowMin:
 mov 	eax, 2
@@ -214,21 +247,17 @@ aboveMax:
 mov 	eax, 3
 jmp 	done
 
-empty:
-mov 	eax, 5
-jmp 	done
-
 invalidNumber:
 mov 	eax, 1
 jmp 	done
 
-overFlow:
+lengthExceeded:
 mov 	eax, 4
 jmp 	done
 
-success:
-mov 	eax, 0
-mov 	qword [rbx], r14
+emptyInput:
+mov 	eax, 5
+jmp 	done
 
 done:
 pop 	rcx
@@ -237,12 +266,10 @@ pop 	r11
 pop 	r12
 pop 	rbx
 pop 	rdx
-pop 	rsi
 pop 	rdi
-
+pop 	rbp
 
 ret
-
 
 ; ****************************************************************************
 ;  Sort data using odd/even sort.
