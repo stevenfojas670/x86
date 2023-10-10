@@ -66,7 +66,7 @@ ENDOFINPUT	equ	5
 MIN_NUM		equ	1
 MAX_NUM		equ	50000
 
-BUFFSIZE	equ	3			; 50 chars including NULL
+BUFFSIZE	equ	50			; 50 chars including NULL
 
 ; -----
 ;  NO static local variables allowed...
@@ -129,11 +129,14 @@ push 	rbx			;stores newNumber
 push 	r12			;stores size of input
 push 	r11			;counter
 push 	r14
+push 	r15
 push 	rcx			;stores 10
+push 	r13
 
 ;Allocate 50 bytes for the buffer
 mov 	r12, 0 		;counter for chars
-mov 	rbx, rdi
+lea 	rbx, [rbp + 1] 	;actual buffer
+mov 	r15, rdi
 readChars:
 mov 	rax, SYS_read
 mov 	rdi, STDIN
@@ -149,57 +152,45 @@ cmp 	al, SPACE
 je 		readChars
 
 inc 	r12
-cmp 	r12, BUFFSIZE + 1
+cmp 	r12, BUFFSIZE
 jae	 	readChars
 
-mov 	byte [rbp + r12], al
+mov 	byte [rbx], al
+inc 	rbx
 
 jmp 	readChars
 readDone:
+mov 	byte [rbx], NULL
 
 ;Length Check
-cmp 	r12, BUFFSIZE + 1
+cmp 	r12, BUFFSIZE
 jae	 	lengthExceeded
 
 cmp 	r12, 0
 je 		emptyInput
 
-mov 	byte [rbp + r12], NULL
-
-;if(arr[0] == 0){
-;	for(int i = 0 i < arr.size() i++){
-;		if(arr[i] != 0){
-;			firstNonZero = i
-;			break
-;		}
-;	}
-;	newSize = arr.size() - firstNonZero
-;}
-;ignore leading zeroes
-mov 	r11, 1
-cmp 	byte [rbp + 1], 48
-je		ignoreLeadingZero
+lea		rbx, [rbp + 1]
+cmp 	byte [rbx], 48
+je 		ignoreLeadingZero
 jmp 	skip
 ignoreLeadingZero:
-mov 	r11, 0
-mov 	r14, 0
-findZero:
-mov 	al, byte [rbp + r11]
+mov 	al, byte [rbx]
 cmp 	al, 48
 jne 	skip
-inc 	r11
-cmp 	r11, r12
-jne 	findZero
+inc 	rbx
+dec 	r12
+cmp 	byte [rbx], NULL
+jne 	ignoreLeadingZero
 skip:
-sub 	r12, r11		;size - zeroCount
 
-mov 	rdx, r12
-dec 	rdx 		;n-1
+mov 	r11, 0
+mov 	r13, r12
+dec 	r13 		;n-1
 mov 	rcx, 6		;base  
 mov 	r14, 0
 
 toDigit:
-movzx 	eax, byte [rbp + r11]
+movzx 	eax, byte [rbx + r11]
 
 cmp 	al, 48
 jb		invalidNumber
@@ -208,14 +199,14 @@ cmp 	al, 54
 jae		invalidNumber
 sub 	eax, 48
 
-cmp 	rdx, 0
+cmp 	r13, 0
 jne 	exp
 jmp 	continue3
 
 exp:
-mul 	cl
-dec 	rdx
-cmp 	rdx, 0
+mul 	ecx
+dec 	r13
+cmp 	r13, 0
 jne 	exp
 
 continue3:
@@ -223,8 +214,8 @@ add 	r14d, eax
 
 inc 	r11
 dec 	r12			
-mov 	rdx, r12	;Getting the proper size of the string
-dec 	rdx			;decreasing n to do x^n-1
+mov 	r13, r12	;Getting the proper size of the string
+dec 	r13			;decreasing n to do x^n-1
 cmp 	r12, 0
 jne 	toDigit
 
@@ -235,7 +226,7 @@ cmp 	r14, MAX_NUM
 jae 	aboveMax
 
 ;Success
-mov 	dword [rbx], r14d
+mov 	dword [r15], r14d
 mov 	eax, 0
 jmp 	done
 
@@ -260,7 +251,9 @@ mov 	eax, 5
 jmp 	done
 
 done:
+pop 	r13
 pop 	rcx
+pop 	r15
 pop 	r14
 pop 	r11
 pop 	r12
