@@ -1,9 +1,9 @@
 ; *****************************************************************
-;  Name: 
-;  NSHE_ID: 
-;  Section: 
+;  Name: Steven Fojas
+;  NSHE_ID: 2001342715
+;  Section: 1003
 ;  Assignment: 10
-;  Description:  
+;  Description:  Working with floating point, sys calls, and openGL
 
 ; -----
 ;  Function: getRadii
@@ -173,8 +173,8 @@ extern	cosf, sinf
 
 ; -----
 ;  Arguments:
-;	- ARGC
-;	- ARGV
+;	- ARGC - rdi
+;	- ARGV - rsi
 ;	- radius 1, double-word, address
 ;	- radius 2, double-word, address
 ;	- offset Position, double-word, address
@@ -186,7 +186,69 @@ extern	cosf, sinf
 
 ;	YOUR CODE GOES HERE
 
+global getRadii
+getRadii:
 
+push 	rbp
+mov 	rbp, rsp
+push 	rbx
+push 	rcx
+push 	r11
+push 	r12
+push 	r13
+push 	r14
+push 	r15
+
+mov 	r12, 1		;argv counter
+mov 	rcx, 0		;argv string counter
+
+;Check first input
+;argv[1] and argv[2] == "-r"
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + rcx]
+cmp 	al, 45 						;vec[1] == "-"
+jne 	incorrectArgs
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 114						;vec[2] == "r"
+jne 	incorrectArgs
+
+mov 	rcx, 0						;counter through string
+inc 	r12							;argv[2]
+push 	rdi
+mov 	rdi, qword [rsi + r12 * 8]
+call 	StringToNum
+
+cmp 	eax,
+
+cmp 	r14d, 0
+jb 		r1InvalidValue
+
+cmp 	r14d, 1054
+ja 		r1InvalidValue
+
+;0 <= argv[3] <= 1054
+
+r1InvalidValue:
+mov 	rdi, errR1value
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+incorrectArgs:
+mov 	rdi, errUsage
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+done:
+
+pop 	r14
+pop 	r13
+pop 	r12
+pop 	rbp
+
+ret
 
 ; ******************************************************************
 ;  Spirograph Plotting Function.
@@ -344,3 +406,61 @@ prtDone:
 
 ; ******************************************************************
 
+global StringToNum
+StringToNum:
+
+push 	rcx
+push 	rbx
+push 	r13
+push 	r11
+push 	r14
+
+mov 	rcx, 0
+mov 	rax, 0
+
+stringSize:						;Gets the size of the current string
+mov 	al, byte [rdi + rcx]
+inc 	rcx
+cmp 	al, NULL
+jne 	stringSize
+
+dec 	rcx							;size ignores NULL
+mov 	rbx, 0						;used to increment through string
+mov 	r13, 10						;base for conversion to digit
+mov 	r11, rcx
+dec 	r11							;n - 1
+mov 	r14, 0						;will store the converted value for comp
+
+toDigit:
+movzx 	eax, byte [rdi + rbx]
+sub 	eax, 48
+
+cmp 	r11, 0						;if exp is 0 then skip and add
+jne 	exp 	
+jmp 	continue
+
+exp:
+mul 	r13d
+dec 	r11
+cmp 	r11, 0
+jne 	exp
+
+continue:
+add 	r14d, eax
+
+inc 	rbx							;increment string counter
+dec 	rcx							;moving down in size of string
+mov 	r11, rcx					;getting original size back
+dec 	r11 						;getting n - 1
+cmp 	rcx, 0						;if string is out of chars
+jne 	toDigit
+
+mov 	eax, r14d
+
+pop 	r14
+pop 	r11
+pop 	r13
+pop 	rbx
+pop 	rcx
+
+ret
