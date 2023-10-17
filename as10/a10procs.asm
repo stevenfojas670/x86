@@ -521,6 +521,7 @@ common	color		1:1		; color code letter, byte, ASCII value
 global drawSpiro
 drawSpiro:
 	push	r12
+	push 	r11
 
 ; -----
 ;  Prepare for drawing
@@ -542,13 +543,104 @@ drawSpiro:
 
 ;	YOUR CODE GOES HERE
 
+mov 	al, byte [color]
+cmp 	al, 114				;red
+jne 	setGreen
+mov 	byte [red], 255
+mov 	byte [green], 0
+mov 	byte [blue], 0
+jmp 	colorSet
 
+setGreen:
+cmp 	al, 103				;green
+jne 	setBlue
+mov 	byte [red], 0
+mov 	byte [green], 255
+mov 	byte [blue], 0
+jmp 	colorSet
+
+setBlue:
+cmp 	al, 98				;blue
+jne 	setPurple
+mov 	byte [red], 0
+mov 	byte [green], 0
+mov 	byte [blue], 255
+jmp 	colorSet
+
+setPurple:
+cmp 	al, 112				;purple
+jne 	setYellow
+mov 	byte [red], 255
+mov 	byte [green], 0
+mov 	byte [blue], 255
+jmp 	colorSet
+
+setYellow:
+cmp 	al, 121				;yellow
+jne 	setWhite
+mov 	byte [red], 255
+mov 	byte [green], 255
+mov 	byte [blue], 0
+jmp 	colorSet
+
+
+setWhite:
+mov 	byte [red], 255
+mov 	byte [green], 255
+mov 	byte [blue], 255
+jmp 	colorSet
+
+colorSet:
 
 ; -----
 ;  Loop initializations and main plotting loop
 
 ;	YOUR CODE GOES HERE
 
+;iterations = 360.0 / tStep
+;floating point 32 bit to integer 32 bit register
+movss 	xmm0, dword [limit]
+cvtss2si 	eax, xmm0
+div 	dword [tStep]
+mov 	dword [iterations], eax
+
+mov 	r11d, dword [t]
+graphLoop:
+
+cvtsi2ss 	xmm1, dword [radius1]
+cvtsi2ss	xmm0, dword [radius2]
+addss 	xmm1, xmm0
+movss 	xmm2, xmm1					;stores radii
+
+push 	rdi
+mov 	rdi, r11
+call 	cosf						;cos(radii)
+pop 	rdi
+
+mulss 	xmm1, xmm0					;xmm1 destination (radii * cos(t))
+cvtsi2ss 	xmm0, r11d				;xmm0 takes t
+addss 		xmm0, dword [s]
+cvtsi2ss 	xmm1, dword [radius2]
+divss 		xmm0, xmm1				;(t+s)/r2
+mulss 		xmm0, xmm2				;radii * ((t+s)/r2)
+movss 		xmm3, xmm0				;stores radii * (t+s)/r2
+
+push 	rdi
+cvtss2si 	rdi, xmm0
+call 	cosf						;cos(radii * (t+s)/r2)
+pop 	rdi
+
+;offPos * cos(radii * ((t+s)/2))
+cvtsi2ss 	xmm1, dword [offPos]
+mulss 	xmm1, xmm0
+
+;(radii * cos(t)) + (offPos * cos(radii * ((t+s)/2)))
+addss 	xmm3, xmm1
+movss 	dword [x], xmm3
+
+inc 	r11d
+cmp 	r11d, dword [iterations]
+jb 		graphLoop
 
 ; -----
 ;  Plotting done.
@@ -560,14 +652,19 @@ drawSpiro:
 ;  Update s for next call.
 
 ;	YOUR CODE GOES HERE
-
+;sStep = speed / scale
+movss 	xmm0, dword [speed]
+divss 	xmm0, dword [scale]
+addss 	xmm0, dword [s]
+movss 	dword [s], xmm0
 
 ; -----
 ;  Ensure openGL knows to call again
 
 	call	glutPostRedisplay
 
-	pop	r12
+	pop 	r11
+	pop		r12
 	ret
 
 ; ******************************************************************

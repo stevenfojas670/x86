@@ -327,7 +327,7 @@
    327 00000054 49FFC4                 inc r12
    328 00000057 57                     push rdi
    329 00000058 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
-   330 0000005C E8E4020000             call StringToNum
+   330 0000005C E867040000             call StringToNum
    331 00000061 5F                     pop rdi
    332                                 
    333 00000062 83F800                 cmp eax, R1_MIN
@@ -359,7 +359,7 @@
    359 000000B7 49FFC4                 inc r12
    360 000000BA 57                     push rdi
    361 000000BB 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
-   362 000000BF E881020000             call StringToNum
+   362 000000BF E804040000             call StringToNum
    363 000000C4 5F                     pop rdi
    364                                 
    365 000000C5 83F801                 cmp eax, R2_MIN
@@ -391,7 +391,7 @@
    391 0000011A 49FFC4                 inc r12
    392 0000011D 57                     push rdi
    393 0000011E 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
-   394 00000122 E81E020000             call StringToNum
+   394 00000122 E8A1030000             call StringToNum
    395 00000127 5F                     pop rdi
    396                                 
    397 00000128 83F801                 cmp eax, OP_MIN
@@ -423,7 +423,7 @@
    423 0000017E 49FFC4                 inc r12
    424 00000181 57                     push rdi
    425 00000182 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
-   426 00000186 E8BA010000             call StringToNum
+   426 00000186 E83D030000             call StringToNum
    427 0000018B 5F                     pop rdi
    428                                 
    429 0000018C 83F801                 cmp eax, SP_MIN
@@ -487,67 +487,67 @@
    487                                 
    488                                 clIncorrectValue:
    489 00000208 48C7C7[00000000]       mov rdi, errCLvalue
-   490 0000020F E800010000             call printString
+   490 0000020F E883020000             call printString
    491 00000214 B800000000             mov eax, FALSE
    492 00000219 E9C2000000             jmp done
    493                                 
    494                                 clIncorrectSpec:
    495 0000021E 48C7C7[00000000]       mov rdi, errCLsp
-   496 00000225 E8EA000000             call printString
+   496 00000225 E86D020000             call printString
    497 0000022A B800000000             mov eax, FALSE
    498 0000022F E9AC000000             jmp done
    499                                 
    500                                 spIncorrectValue:
    501 00000234 48C7C7[00000000]       mov rdi, errSPvalue
-   502 0000023B E8D4000000             call printString
+   502 0000023B E857020000             call printString
    503 00000240 B800000000             mov eax, FALSE
    504 00000245 E996000000             jmp done
    505                                 
    506                                 spIncorrectSpec:
    507 0000024A 48C7C7[00000000]       mov rdi, errSPsp
-   508 00000251 E8BE000000             call printString
+   508 00000251 E841020000             call printString
    509 00000256 B800000000             mov eax, FALSE
    510 0000025B E980000000             jmp done
    511                                 
    512                                 opInvalidValue:
    513 00000260 48C7C7[00000000]       mov rdi, errOPvalue
-   514 00000267 E8A8000000             call printString
+   514 00000267 E82B020000             call printString
    515 0000026C B800000000             mov eax, FALSE
    516 00000271 EB70                   jmp done
    517                                 
    518                                 opIncorrectSpec:
    519 00000273 48C7C7[00000000]       mov rdi, errOPsp
-   520 0000027A E895000000             call printString
+   520 0000027A E818020000             call printString
    521 0000027F B800000000             mov eax, FALSE
    522 00000284 EB5D                   jmp done
    523                                 
    524                                 r2InvalidValue:
    525 00000286 48C7C7[00000000]       mov rdi, errR2value
-   526 0000028D E882000000             call printString
+   526 0000028D E805020000             call printString
    527 00000292 B800000000             mov eax, FALSE
    528 00000297 EB4A                   jmp done
    529                                 
    530                                 r2InvalidSpec:
    531 00000299 48C7C7[00000000]       mov rdi, errR2sp
-   532 000002A0 E86F000000             call printString
+   532 000002A0 E8F2010000             call printString
    533 000002A5 B800000000             mov eax, FALSE
    534 000002AA EB37                   jmp done
    535                                 
    536                                 r1InvalidValue:
    537 000002AC 48C7C7[00000000]       mov rdi, errR1value
-   538 000002B3 E85C000000             call printString
+   538 000002B3 E8DF010000             call printString
    539 000002B8 B800000000             mov eax, FALSE
    540 000002BD EB24                   jmp done
    541                                 
    542                                 r1InvalidSpec:
    543 000002BF 48C7C7[00000000]       mov rdi, errR1sp
-   544 000002C6 E849000000             call printString
+   544 000002C6 E8CC010000             call printString
    545 000002CB B800000000             mov eax, FALSE
    546 000002D0 EB11                   jmp done
    547                                 
    548                                 incorrectUsage:
    549 000002D2 48C7C7[00000000]       mov rdi, errUsage
-   550 000002D9 E836000000             call printString
+   550 000002D9 E8B9010000             call printString
    551 000002DE B800000000             mov eax, FALSE
    552 000002E3 EBFE                   jmp done
    553                                 
@@ -624,17 +624,17 @@
    624                                 [global drawSpiro]
    625                                 drawSpiro:
    626 000002ED 4154                    push r12
-   627                                 
+   627 000002EF 4153                    push r11
    628                                 
    629                                 
    630                                 
-   631 000002EF 48C7C700400000          mov rdi, GL_COLOR_BUFFER_BIT
-   632 000002F6 E8(F6FFFFFF)            call glClear
-   633                                 
+   631                                 
+   632 000002F1 48C7C700400000          mov rdi, GL_COLOR_BUFFER_BIT
+   633 000002F8 E8(F6FFFFFF)            call glClear
    634                                 
-   635 000002FB 48C7C700000000          mov rdi, GL_POINTS
-   636 00000302 E8(F6FFFFFF)            call glBegin
-   637                                 
+   635                                 
+   636 000002FD 48C7C700000000          mov rdi, GL_POINTS
+   637 00000304 E8(F6FFFFFF)            call glBegin
    638                                 
    639                                 
    640                                 
@@ -646,139 +646,236 @@
    646                                 
    647                                 
    648                                 
-   649                                 
-   650                                 
-   651                                 
-   652                                 
-   653                                 
-   654                                 
-   655                                 
+   649 00000309 8A0425[00000000]       mov al, byte [color]
+   650 00000310 3C72                   cmp al, 114
+   651 00000312 751B                   jne setGreen
+   652 00000314 C60425[00000000]FF     mov byte [red], 255
+   653 0000031C C60425[00000000]00     mov byte [green], 0
+   654 00000324 C60425[00000000]00     mov byte [blue], 0
+   655 0000032C E98D000000             jmp colorSet
    656                                 
-   657                                 
-   658                                 
-   659 00000307 E8(F6FFFFFF)            call glEnd
-   660 0000030C E8(F6FFFFFF)            call glFlush
-   661                                 
-   662                                 
-   663                                 
+   657                                 setGreen:
+   658 00000331 3C67                   cmp al, 103
+   659 00000333 7518                   jne setBlue
+   660 00000335 C60425[00000000]00     mov byte [red], 0
+   661 0000033D C60425[00000000]FF     mov byte [green], 255
+   662 00000345 C60425[00000000]00     mov byte [blue], 0
+   663 0000034D EB72                   jmp colorSet
    664                                 
-   665                                 
-   666                                 
-   667                                 
-   668                                 
-   669                                 
-   670                                 
-   671 00000311 E8(F6FFFFFF)            call glutPostRedisplay
+   665                                 setBlue:
+   666 0000034F 3C62                   cmp al, 98
+   667 00000351 7518                   jne setPurple
+   668 00000353 C60425[00000000]00     mov byte [red], 0
+   669 0000035B C60425[00000000]00     mov byte [green], 0
+   670 00000363 C60425[00000000]FF     mov byte [blue], 255
+   671 0000036B EB54                   jmp colorSet
    672                                 
-   673 00000316 415C                    pop r12
-   674 00000318 C3                      ret
-   675                                 
-   676                                 
-   677                                 
-   678                                 
-   679                                 
+   673                                 setPurple:
+   674 0000036D 3C70                   cmp al, 112
+   675 0000036F 7518                   jne setYellow
+   676 00000371 C60425[00000000]FF     mov byte [red], 255
+   677 00000379 C60425[00000000]00     mov byte [green], 0
+   678 00000381 C60425[00000000]FF     mov byte [blue], 255
+   679 00000389 EB36                   jmp colorSet
    680                                 
-   681                                 
-   682                                 
-   683                                 
-   684                                 
-   685                                 
-   686                                 
-   687                                 
+   681                                 setYellow:
+   682 0000038B 3C79                   cmp al, 121
+   683 0000038D 7518                   jne setWhite
+   684 0000038F C60425[00000000]FF     mov byte [red], 255
+   685 00000397 C60425[00000000]FF     mov byte [green], 255
+   686 0000039F C60425[00000000]00     mov byte [blue], 0
+   687 000003A7 EB18                   jmp colorSet
    688                                 
-   689                                 [global printString]
-   690                                 printString:
-   691                                 
-   692                                 
-   693                                 
-   694                                 
-   695 00000319 4889FB                  mov rbx, rdi
-   696 0000031C 48C7C200000000          mov rdx, 0
-   697                                 strCountLoop:
-   698 00000323 803B00                  cmp byte [rbx], NULL
-   699 00000326 7406                    je strCountDone
-   700 00000328 48FFC3                  inc rbx
-   701 0000032B 48FFC2                  inc rdx
-   702 0000032E EBF1                    jmp strCountLoop
-   703                                 strCountDone:
+   689                                 
+   690                                 setWhite:
+   691 000003A9 C60425[00000000]FF     mov byte [red], 255
+   692 000003B1 C60425[00000000]FF     mov byte [green], 255
+   693 000003B9 C60425[00000000]FF     mov byte [blue], 255
+   694 000003C1 EBFE                   jmp colorSet
+   695                                 
+   696                                 colorSet:
+   697                                 
+   698                                 
+   699                                 
+   700                                 
+   701                                 
+   702                                 
+   703                                 
    704                                 
-   705 00000330 4883FA00                cmp rdx, 0
-   706 00000334 7411                    je prtDone
-   707                                 
-   708                                 
+   705 000003C3 F30F100425[00000000]     movss xmm0, dword [limit]
+   706 000003CC F30F2DC0               cvtss2si eax, xmm0
+   707 000003D0 F73425[00000000]       div dword [tStep]
+   708 000003D7 890425[00000000]       mov dword [iterations], eax
    709                                 
-   710                                 
-   711 00000336 48C7C001000000          mov rax, SYS_write
-   712 0000033D 4889FE                  mov rsi, rdi
-   713 00000340 48C7C701000000          mov rdi, STDOUT
-   714                                 
-   715 00000347 0F05                    syscall
-   716                                 
+   710 000003DE 448B1C25[00000000]     mov r11d, dword [t]
+   711                                 graphLoop:
+   712                                 
+   713 000003E6 F30F2A0C25[00000000]     cvtsi2ss xmm1, dword [radius1]
+   714 000003EF F30F2A0425[00000000]     cvtsi2ss xmm0, dword [radius2]
+   715 000003F8 F30F58C8               addss xmm1, xmm0
+   716 000003FC F30F10D1               movss xmm2, xmm1
    717                                 
-   718                                 
-   719                                 
-   720                                 prtDone:
-   721 00000349 C3                      ret
+   718 00000400 57                     push rdi
+   719 00000401 4C89DF                 mov rdi, r11
+   720 00000404 E8(F6FFFFFF)           call cosf
+   721 00000409 5F                     pop rdi
    722                                 
-   723                                 
-   724                                 
-   725                                 [global StringToNum]
-   726                                 StringToNum:
-   727                                 
-   728 0000034A 51                     push rcx
-   729 0000034B 53                     push rbx
-   730 0000034C 52                     push rdx
-   731 0000034D 4155                   push r13
-   732 0000034F 4153                   push r11
-   733 00000351 4156                   push r14
-   734                                 
-   735 00000353 48C7C100000000         mov rcx, 0
-   736 0000035A 48C7C000000000         mov rax, 0
-   737                                 
-   738                                 stringSize:
-   739 00000361 8A040F                 mov al, byte [rdi + rcx]
-   740 00000364 48FFC1                 inc rcx
-   741 00000367 3C00                   cmp al, NULL
-   742 00000369 75F4                   jne stringSize
+   723 0000040A F30F59C8               mulss xmm1, xmm0
+   724 0000040E F3410F2AC3             cvtsi2ss xmm0, r11d
+   725 00000413 F30F580425[00000000]     addss xmm0, dword [s]
+   726 0000041C F30F2A0C25[00000000]     cvtsi2ss xmm1, dword [radius2]
+   727 00000425 F30F5EC1               divss xmm0, xmm1
+   728 00000429 F30F59C2               mulss xmm0, xmm2
+   729 0000042D F30F10D8               movss xmm3, xmm0
+   730                                 
+   731 00000431 57                     push rdi
+   732 00000432 F3480F2DF8             cvtss2si rdi, xmm0
+   733 00000437 E8(F6FFFFFF)           call cosf
+   734 0000043C 5F                     pop rdi
+   735                                 
+   736                                 
+   737 0000043D F30F2A0C25[00000000]     cvtsi2ss xmm1, dword [offPos]
+   738 00000446 F30F59C8               mulss xmm1, xmm0
+   739                                 
+   740                                 
+   741 0000044A F30F58D9               addss xmm3, xmm1
+   742 0000044E F30F111C25[00000000]     movss dword [x], xmm3
    743                                 
-   744 0000036B 48FFC9                 dec rcx
-   745 0000036E 48C7C300000000         mov rbx, 0
-   746 00000375 49C7C506000000         mov r13, 6
-   747 0000037C 4989CB                 mov r11, rcx
-   748 0000037F 49FFCB                 dec r11
-   749 00000382 49C7C600000000         mov r14, 0
+   744 00000457 41FFC3                 inc r11d
+   745 0000045A 443B1C25[00000000]     cmp r11d, dword [iterations]
+   746 00000462 7280                   jb graphLoop
+   747                                 
+   748                                 
+   749                                 
    750                                 
-   751                                 toDigit:
-   752 00000389 0FB6041F               movzx eax, byte [rdi + rbx]
-   753 0000038D 83E830                 sub eax, 48
+   751 00000464 E8(F6FFFFFF)            call glEnd
+   752 00000469 E8(F6FFFFFF)            call glFlush
+   753                                 
    754                                 
-   755 00000390 4983FB00               cmp r11, 0
-   756 00000394 7500                   jne exp
-   757 00000396 EB0A                   jmp continue
+   755                                 
+   756                                 
+   757                                 
    758                                 
-   759                                 exp:
-   760 00000398 41F7E5                 mul r13d
-   761 0000039B 49FFCB                 dec r11
-   762 0000039E 4983FB00               cmp r11, 0
-   763 000003A2 75F2                   jne exp
+   759 0000046E F30F100425[00000000]     movss xmm0, dword [speed]
+   760 00000477 F30F5E0425[00000000]     divss xmm0, dword [scale]
+   761 00000480 F30F580425[00000000]     addss xmm0, dword [s]
+   762 00000489 F30F110425[00000000]     movss dword [s], xmm0
+   763                                 
    764                                 
-   765                                 continue:
-   766 000003A4 4101C6                 add r14d, eax
-   767                                 
-   768 000003A7 48FFC3                 inc rbx
-   769 000003AA 48FFC9                 dec rcx
-   770 000003AD 4989CB                 mov r11, rcx
-   771 000003B0 49FFCB                 dec r11
-   772 000003B3 4883F900               cmp rcx, 0
-   773 000003B7 75CE                   jne toDigit
+   765                                 
+   766                                 
+   767 00000492 E8(F6FFFFFF)            call glutPostRedisplay
+   768                                 
+   769 00000497 415B                    pop r11
+   770 00000499 415C                    pop r12
+   771 0000049B C3                      ret
+   772                                 
+   773                                 
    774                                 
-   775 000003B9 4489F0                 mov eax, r14d
+   775                                 
    776                                 
-   777 000003BC 415E                   pop r14
-   778 000003BE 415B                   pop r11
-   779 000003C0 415D                   pop r13
-   780 000003C2 5A                     pop rdx
-   781 000003C3 5B                     pop rbx
-   782 000003C4 59                     pop rcx
+   777                                 
+   778                                 
+   779                                 
+   780                                 
+   781                                 
+   782                                 
    783                                 
-   784 000003C5 C3                     ret
+   784                                 
+   785                                 
+   786                                 [global printString]
+   787                                 printString:
+   788                                 
+   789                                 
+   790                                 
+   791                                 
+   792 0000049C 4889FB                  mov rbx, rdi
+   793 0000049F 48C7C200000000          mov rdx, 0
+   794                                 strCountLoop:
+   795 000004A6 803B00                  cmp byte [rbx], NULL
+   796 000004A9 7406                    je strCountDone
+   797 000004AB 48FFC3                  inc rbx
+   798 000004AE 48FFC2                  inc rdx
+   799 000004B1 EBF1                    jmp strCountLoop
+   800                                 strCountDone:
+   801                                 
+   802 000004B3 4883FA00                cmp rdx, 0
+   803 000004B7 7411                    je prtDone
+   804                                 
+   805                                 
+   806                                 
+   807                                 
+   808 000004B9 48C7C001000000          mov rax, SYS_write
+   809 000004C0 4889FE                  mov rsi, rdi
+   810 000004C3 48C7C701000000          mov rdi, STDOUT
+   811                                 
+   812 000004CA 0F05                    syscall
+   813                                 
+   814                                 
+   815                                 
+   816                                 
+   817                                 prtDone:
+   818 000004CC C3                      ret
+   819                                 
+   820                                 
+   821                                 
+   822                                 [global StringToNum]
+   823                                 StringToNum:
+   824                                 
+   825 000004CD 51                     push rcx
+   826 000004CE 53                     push rbx
+   827 000004CF 52                     push rdx
+   828 000004D0 4155                   push r13
+   829 000004D2 4153                   push r11
+   830 000004D4 4156                   push r14
+   831                                 
+   832 000004D6 48C7C100000000         mov rcx, 0
+   833 000004DD 48C7C000000000         mov rax, 0
+   834                                 
+   835                                 stringSize:
+   836 000004E4 8A040F                 mov al, byte [rdi + rcx]
+   837 000004E7 48FFC1                 inc rcx
+   838 000004EA 3C00                   cmp al, NULL
+   839 000004EC 75F4                   jne stringSize
+   840                                 
+   841 000004EE 48FFC9                 dec rcx
+   842 000004F1 48C7C300000000         mov rbx, 0
+   843 000004F8 49C7C506000000         mov r13, 6
+   844 000004FF 4989CB                 mov r11, rcx
+   845 00000502 49FFCB                 dec r11
+   846 00000505 49C7C600000000         mov r14, 0
+   847                                 
+   848                                 toDigit:
+   849 0000050C 0FB6041F               movzx eax, byte [rdi + rbx]
+   850 00000510 83E830                 sub eax, 48
+   851                                 
+   852 00000513 4983FB00               cmp r11, 0
+   853 00000517 7500                   jne exp
+   854 00000519 EB0A                   jmp continue
+   855                                 
+   856                                 exp:
+   857 0000051B 41F7E5                 mul r13d
+   858 0000051E 49FFCB                 dec r11
+   859 00000521 4983FB00               cmp r11, 0
+   860 00000525 75F2                   jne exp
+   861                                 
+   862                                 continue:
+   863 00000527 4101C6                 add r14d, eax
+   864                                 
+   865 0000052A 48FFC3                 inc rbx
+   866 0000052D 48FFC9                 dec rcx
+   867 00000530 4989CB                 mov r11, rcx
+   868 00000533 49FFCB                 dec r11
+   869 00000536 4883F900               cmp rcx, 0
+   870 0000053A 75CE                   jne toDigit
+   871                                 
+   872 0000053C 4489F0                 mov eax, r14d
+   873                                 
+   874 0000053F 415E                   pop r14
+   875 00000541 415B                   pop r11
+   876 00000543 415D                   pop r13
+   877 00000545 5A                     pop rdx
+   878 00000546 5B                     pop rbx
+   879 00000547 59                     pop rcx
+   880                                 
+   881 00000548 C3                     ret
