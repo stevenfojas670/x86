@@ -199,35 +199,153 @@ push 	r13
 push 	r14
 push 	r15
 
+cmp 	rdi, 1
+jbe		incorrectUsage
+
+cmp 	rdi, 11
+ja 		incorrectUsage
+
 mov 	r12, 1		;argv counter
 mov 	rcx, 0		;argv string counter
 
 ;Check first input
-;argv[1] and argv[2] == "-r"
+;argv[1] == "-r1"
 mov 	r15, qword [rsi + r12 * 8]
 mov 	al, byte [r15 + rcx]
 cmp 	al, 45 						;vec[1] == "-"
-jne 	incorrectArgs
+jne 	r1InvalidSpec
 inc 	rcx
 mov 	al, byte [r15 + rcx]
 cmp 	al, 114						;vec[2] == "r"
-jne 	incorrectArgs
+jne 	r1InvalidSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 49
+jne 	r1InvalidSpec
 
+;0 <= argv[2] "-r1" <= 1054
 mov 	rcx, 0						;counter through string
 inc 	r12							;argv[2]
 push 	rdi
 mov 	rdi, qword [rsi + r12 * 8]
 call 	StringToNum
+pop 	rdi
 
-cmp 	eax,
-
-cmp 	r14d, 0
+cmp 	eax, 0
 jb 		r1InvalidValue
 
-cmp 	r14d, 1054
+cmp 	eax, 1054
 ja 		r1InvalidValue
 
-;0 <= argv[3] <= 1054
+;argv[2] == "-r2"
+mov 	rcx, 0
+inc 	r12
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + rcx]
+cmp 	al, 45
+jne 	r2InvalidSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 114
+jne 	r2InvalidSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 50
+jne 	r2InvalidSpec
+
+;1 <= argv[3] "-r2" <= 1054
+mov 	rcx, 0
+inc 	r12
+push 	rdi
+mov 	rdi, qword [rsi + r12 * 8]
+call 	StringToNum
+pop 	rdi
+
+cmp 	eax, 1
+jb 		r2InvalidValue
+
+cmp 	eax, 1054
+ja 		r2InvalidValue
+
+;argv[4] == "-op"
+mov 	rcx, 0
+inc 	r12
+mov 	r15, dword [rsi + r12 * 8]
+mov 	al, byte [r15 + rcx]
+cmp 	al, 45
+jne 	opIncorrectSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 111
+jne 	opIncorrectSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 112
+jne 	opIncorrectSpec
+
+;1 <= argv[5] "op" <= 1054
+mov 	rcx, 0
+inc 	r12
+push 	rdi
+mov 	rdi, qword [rsi + r12 * 8]
+call 	StringToNum
+pop 	rdi
+
+cmp 	al, 1
+jb 		opInvalidValue
+
+cmp 	al, 1054
+ja 		opInvalidValue
+
+;argv[6] == "-sp"
+mov 	rcx, 0
+inc 	r12 
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + rcx]
+cmp 	al, 45
+jne 	spIncorrectSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 115
+jne 	spIncorrectSpec
+inc 	rcx
+mov 	al, byte [r15 + rcx]
+cmp 	al, 112
+jne 	spIncorrectSpec
+
+;1 <= sp <= 244
+mov 	rcx, 0
+inc 	r12
+push 	rdi
+mov 	rdi, qword [rsi + r12 * 8]
+call 	StringToNum
+pop 	rdi
+
+cmp 	eax, 1
+jb 		spIncorrectValue
+
+cmp 	eax, 244
+ja 		spIncorrectValue
+
+jmp 	done
+
+opInvalidValue:
+mov 	rdi, errOPvalue
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+r2InvalidValue:
+mov 	rdi, errR2value
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+r2InvalidSpec:
+mov		rdi, errR2sp
+call 	printString
+mov 	eax, FALSE
+jmp 	done
 
 r1InvalidValue:
 mov 	rdi, errR1value
@@ -235,7 +353,13 @@ call 	printString
 mov 	eax, FALSE
 jmp 	done
 
-incorrectArgs:
+r1InvalidSpec:
+mov 	rdi, errR1sp
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+incorrectUsage:
 mov 	rdi, errUsage
 call 	printString
 mov 	eax, FALSE
