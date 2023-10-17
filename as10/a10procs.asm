@@ -175,10 +175,10 @@ extern	cosf, sinf
 ;  Arguments:
 ;	- ARGC - rdi
 ;	- ARGV - rsi
-;	- radius 1, double-word, address
-;	- radius 2, double-word, address
-;	- offset Position, double-word, address
-;	- speed, double-word, address
+;	- radius 1, double-word, address - rdx
+;	- radius 2, double-word, address -rcx
+;	- offset Position, double-word, address -r8
+;	- speed, double-word, address - r9
 ;	- circle color, byte, address
 
 
@@ -192,145 +192,228 @@ getRadii:
 push 	rbp
 mov 	rbp, rsp
 push 	rbx
-push 	rcx
+push 	r10
 push 	r11
 push 	r12
 push 	r13
 push 	r14
 push 	r15
 
-cmp 	rdi, 1
-jbe		incorrectUsage
-
-cmp 	rdi, 11
-ja 		incorrectUsage
-
+; cmp 	rdi, 11
+; jb 		invalidArgCount
 mov 	r12, 1		;argv counter
-mov 	rcx, 0		;argv string counter
+mov 	r10, 0		;argv string counter
 
 ;Check first input
 ;argv[1] == "-r1"
 mov 	r15, qword [rsi + r12 * 8]
-mov 	al, byte [r15 + rcx]
+mov 	al, byte [r15 + r10]
 cmp 	al, 45 						;vec[1] == "-"
 jne 	r1InvalidSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 114						;vec[2] == "r"
 jne 	r1InvalidSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 49
 jne 	r1InvalidSpec
 
 ;0 <= argv[2] "-r1" <= 1054
-mov 	rcx, 0						;counter through string
+mov 	r10, 0						;counter through string
 inc 	r12							;argv[2]
 push 	rdi
 mov 	rdi, qword [rsi + r12 * 8]
 call 	StringToNum
 pop 	rdi
 
-cmp 	eax, 0
+cmp 	eax, R1_MIN
 jb 		r1InvalidValue
 
-cmp 	eax, 1054
+cmp 	eax, R1_MAX
 ja 		r1InvalidValue
 
+mov 	dword [rdx], eax
+
 ;argv[2] == "-r2"
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12
 mov 	r15, qword [rsi + r12 * 8]
-mov 	al, byte [r15 + rcx]
+mov 	al, byte [r15 + r10]
 cmp 	al, 45
 jne 	r2InvalidSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 114
 jne 	r2InvalidSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 50
 jne 	r2InvalidSpec
 
 ;1 <= argv[3] "-r2" <= 1054
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12
 push 	rdi
 mov 	rdi, qword [rsi + r12 * 8]
 call 	StringToNum
 pop 	rdi
 
-cmp 	eax, 1
+cmp 	eax, R2_MIN
 jb 		r2InvalidValue
 
-cmp 	eax, 1054
+cmp 	eax, R2_MAX
 ja 		r2InvalidValue
 
+mov 	dword [rcx], eax
+
 ;argv[4] == "-op"
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12
-mov 	r15, dword [rsi + r12 * 8]
-mov 	al, byte [r15 + rcx]
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + r10]
 cmp 	al, 45
 jne 	opIncorrectSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 111
 jne 	opIncorrectSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 112
 jne 	opIncorrectSpec
 
 ;1 <= argv[5] "op" <= 1054
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12
 push 	rdi
 mov 	rdi, qword [rsi + r12 * 8]
 call 	StringToNum
 pop 	rdi
 
-cmp 	al, 1
+cmp 	eax, OP_MIN
 jb 		opInvalidValue
 
-cmp 	al, 1054
+cmp 	eax, OP_MAX
 ja 		opInvalidValue
 
+mov 	dword [r8], eax
+
 ;argv[6] == "-sp"
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12 
 mov 	r15, qword [rsi + r12 * 8]
-mov 	al, byte [r15 + rcx]
+mov 	al, byte [r15 + r10]
 cmp 	al, 45
 jne 	spIncorrectSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 115
 jne 	spIncorrectSpec
-inc 	rcx
-mov 	al, byte [r15 + rcx]
+inc 	r10
+mov 	al, byte [r15 + r10]
 cmp 	al, 112
 jne 	spIncorrectSpec
 
 ;1 <= sp <= 244
-mov 	rcx, 0
+mov 	r10, 0
 inc 	r12
 push 	rdi
 mov 	rdi, qword [rsi + r12 * 8]
 call 	StringToNum
 pop 	rdi
 
-cmp 	eax, 1
+cmp 	eax, SP_MIN
 jb 		spIncorrectValue
 
-cmp 	eax, 244
+cmp 	eax, SP_MAX
 ja 		spIncorrectValue
 
+mov 	dword [r9], eax
+
+;argv[7] == "-cl"
+mov 	r10, 0
+inc 	r12
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + r10]
+cmp 	al, 45
+jne 	clIncorrectSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, 99
+jne 	clIncorrectSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, 108
+jne 	clIncorrectSpec
+
+;Checking colors - r, g, b, p, y
+mov 	r10, 0
+inc 	r12
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + r10]
+cmp 	al, 114		;al == "r"
+jne 	checkGreen
+
+checkGreen:
+cmp 	al, 103
+jne 	checkBlue
+jmp 	colorSuccess
+
+checkBlue:
+cmp 	al, 98
+jne 	checkPurple
+jmp 	colorSuccess
+
+checkPurple:
+cmp 	al, 121
+jne 	checkWhite
+jmp 	colorSuccess
+
+checkWhite:
+cmp 	al, 119
+jne 	clIncorrectValue
+jmp 	colorSuccess
+
+colorSuccess:
+mov 	eax, dword [rbp + 16]
+
+;Successful command line input
+mov 	eax, TRUE
+jmp 	done
+
+clIncorrectValue:
+mov 	rdi, errCLvalue
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+clIncorrectSpec:
+mov 	rdi, errCLsp
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+spIncorrectValue:
+mov 	rdi, errSPvalue
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+spIncorrectSpec:
+mov 	rdi, errSPsp
+call 	printString
+mov 	eax, FALSE
 jmp 	done
 
 opInvalidValue:
 mov 	rdi, errOPvalue
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+opIncorrectSpec:
+mov 	rdi, errOPsp
 call 	printString
 mov 	eax, FALSE
 jmp 	done
@@ -364,6 +447,12 @@ mov 	rdi, errUsage
 call 	printString
 mov 	eax, FALSE
 jmp 	done
+
+; invalidArgCount:
+; mov 	rdi, errBadCL
+; call 	printString
+; mov 	eax, FALSE
+; jmp 	done
 
 done:
 
@@ -535,6 +624,7 @@ StringToNum:
 
 push 	rcx
 push 	rbx
+push 	rdx
 push 	r13
 push 	r11
 push 	r14
@@ -550,7 +640,7 @@ jne 	stringSize
 
 dec 	rcx							;size ignores NULL
 mov 	rbx, 0						;used to increment through string
-mov 	r13, 10						;base for conversion to digit
+mov 	r13, 6						;base for conversion to digit
 mov 	r11, rcx
 dec 	r11							;n - 1
 mov 	r14, 0						;will store the converted value for comp
@@ -584,6 +674,7 @@ mov 	eax, r14d
 pop 	r14
 pop 	r11
 pop 	r13
+pop 	rdx
 pop 	rbx
 pop 	rcx
 
