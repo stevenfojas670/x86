@@ -199,8 +199,8 @@ push 	r13
 push 	r14
 push 	r15
 
-; cmp 	rdi, 11
-; jb 		invalidArgCount
+cmp 	rdi, 11
+jb 		invalidArgCount
 mov 	r12, 1		;argv counter
 mov 	r10, 0		;argv string counter
 
@@ -448,17 +448,21 @@ call 	printString
 mov 	eax, FALSE
 jmp 	done
 
-; invalidArgCount:
-; mov 	rdi, errBadCL
-; call 	printString
-; mov 	eax, FALSE
-; jmp 	done
+invalidArgCount:
+mov 	rdi, errBadCL
+call 	printString
+mov 	eax, FALSE
+jmp 	done
 
 done:
 
+pop 	r15
 pop 	r14
 pop 	r13
 pop 	r12
+pop 	r11
+pop 	r10
+pop 	rbx
 pop 	rbp
 
 ret
@@ -521,7 +525,6 @@ common	color		1:1		; color code letter, byte, ASCII value
 global drawSpiro
 drawSpiro:
 	push	r12
-	push 	r11
 
 ; -----
 ;  Prepare for drawing
@@ -604,42 +607,56 @@ cvtss2si 	eax, xmm0
 div 	dword [tStep]
 mov 	dword [iterations], eax
 
-mov 	r11d, dword [t]
+mov 	r12d, dword [t]
 graphLoop:
 
-cvtsi2ss 	xmm1, dword [radius1]
-cvtsi2ss	xmm0, dword [radius2]
-addss 	xmm1, xmm0
-movss 	xmm2, xmm1					;stores radii
+;radii
+cvtsi2ss	xmm3, dword [radius1]
+addss 		xmm3, dword [radius2]
 
-push 	rdi
-mov 	rdi, r11
-call 	cosf						;cos(radii)
-pop 	rdi
+;(t+s)/2
+movss 	xmm4, dword [t]
+addss 	xmm4, dword [s]
+divss 	xmm4, dword [radius2]
 
-mulss 	xmm1, xmm0					;xmm1 destination (radii * cos(t))
-cvtsi2ss 	xmm0, r11d				;xmm0 takes t
-addss 		xmm0, dword [s]
-cvtsi2ss 	xmm1, dword [radius2]
-divss 		xmm0, xmm1				;(t+s)/r2
-mulss 		xmm0, xmm2				;radii * ((t+s)/r2)
-movss 		xmm3, xmm0				;stores radii * (t+s)/r2
+;radii * ((t+s)/2)
+movss 	xmm5, xmm4
+mulss 	xmm5, xmm3
 
-push 	rdi
-cvtss2si 	rdi, xmm0
-call 	cosf						;cos(radii * (t+s)/r2)
-pop 	rdi
+;radii * cos(t)
+mov 	rdi, r12
+call 	cosf
+movss 	xmm6, xmm3
+mulss 	xmm6, xmm0
 
-;offPos * cos(radii * ((t+s)/2))
-cvtsi2ss 	xmm1, dword [offPos]
+;offPos * cos(radii * (t+s)/r2)
+cvtsi2ss	xmm1, dword [offPos]
+cvtss2si 	rdi, xmm5
+call 	cosf
 mulss 	xmm1, xmm0
 
-;(radii * cos(t)) + (offPos * cos(radii * ((t+s)/2)))
-addss 	xmm3, xmm1
-movss 	dword [x], xmm3
+;(radii * cos(t)) + (offPos * cos(radii * (t+s)/2))
+movss 	xmm2, xmm6
+addss 	xmm2, xmm1
+movss 	dword [x], xmm2
 
-inc 	r11d
-cmp 	r11d, dword [iterations]
+;radii * sin(t)
+mov 	rdi, r12
+call 	sinf
+mulss 	xmm0, xmm3
+movss 	xmm6, xmm0
+
+;offPos * sin(radii * (t+s)/2)
+cvtsi2ss 	xmm1, dword [offPos]
+cvtss2si 	rdi, xmm5
+call 	sinf
+mulss 	xmm0, xmm1
+
+;(radii * sin(t)) + (offPos * sin(radii * (t+s)/2))
+addss	xmm6, xmm0
+
+inc 	r12d
+cmp 	r12d, dword [iterations]
 jb 		graphLoop
 
 ; -----
@@ -663,7 +680,6 @@ movss 	dword [s], xmm0
 
 	call	glutPostRedisplay
 
-	pop 	r11
 	pop		r12
 	ret
 
