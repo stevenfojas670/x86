@@ -179,7 +179,7 @@ extern	cosf, sinf
 ;	- radius 2, double-word, address -rcx
 ;	- offset Position, double-word, address -r8
 ;	- speed, double-word, address - r9
-;	- circle color, byte, address
+;	- circle color, byte, address [rbp + 16]
 
 
 
@@ -376,7 +376,8 @@ jne 	clIncorrectValue
 jmp 	colorSuccess
 
 colorSuccess:
-mov 	eax, dword [rbp + 16]
+lea 	r15, qword [rbp + 16]
+mov 	dword [r15], eax
 
 ;Successful command line input
 mov 	eax, TRUE
