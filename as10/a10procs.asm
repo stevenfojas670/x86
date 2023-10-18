@@ -199,10 +199,18 @@ push 	r13
 push 	r14
 push 	r15
 
+cmp 	rdi, 1
+jbe 	incorrectUsage
+
 cmp 	rdi, 11
 jb 		invalidArgCount
+
+cmp 	rdi, 11
+ja 		invalidArgCount
+
 mov 	r12, 1		;argv counter
 mov 	r10, 0		;argv string counter
+mov 	rbx, qword [rbp + 16]				;stores color
 
 ;Check first input
 ;argv[1] == "-r1"
@@ -217,6 +225,10 @@ jne 	r1InvalidSpec
 inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 49
+jne 	r1InvalidSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, NULL
 jne 	r1InvalidSpec
 
 ;0 <= argv[2] "-r1" <= 1054
@@ -250,6 +262,10 @@ inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 50
 jne 	r2InvalidSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, NULL
+jne 	r2InvalidSpec
 
 ;1 <= argv[3] "-r2" <= 1054
 mov 	r10, 0
@@ -273,15 +289,19 @@ inc 	r12
 mov 	r15, qword [rsi + r12 * 8]
 mov 	al, byte [r15 + r10]
 cmp 	al, 45
-jne 	opIncorrectSpec
+jne 	opInvalidSpec
 inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 111
-jne 	opIncorrectSpec
+jne 	opInvalidSpec
 inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 112
-jne 	opIncorrectSpec
+jne 	opInvalidSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, NULL
+jne 	opInvalidSpec
 
 ;1 <= argv[5] "op" <= 1054
 mov 	r10, 0
@@ -305,15 +325,19 @@ inc 	r12
 mov 	r15, qword [rsi + r12 * 8]
 mov 	al, byte [r15 + r10]
 cmp 	al, 45
-jne 	spIncorrectSpec
+jne 	spInvalidSpec
 inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 115
-jne 	spIncorrectSpec
+jne 	spInvalidSpec
 inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 112
-jne 	spIncorrectSpec
+jne 	spInvalidSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, NULL
+jne 	spInvalidSpec
 
 ;1 <= sp <= 244
 mov 	r10, 0
@@ -346,6 +370,10 @@ inc 	r10
 mov 	al, byte [r15 + r10]
 cmp 	al, 108
 jne 	clIncorrectSpec
+inc 	r10
+mov 	al, byte [r15 + r10]
+cmp 	al, NULL
+jne 	clIncorrectSpec
 
 ;Checking colors - r, g, b, p, y
 mov 	r10, 0
@@ -362,11 +390,16 @@ jmp 	colorSuccess
 
 checkBlue:
 cmp 	al, 98
+jne 	checkYellow
+jmp 	colorSuccess
+
+checkYellow:
+cmp 	al, 121
 jne 	checkPurple
 jmp 	colorSuccess
 
 checkPurple:
-cmp 	al, 121
+cmp 	al, 112
 jne 	checkWhite
 jmp 	colorSuccess
 
@@ -376,8 +409,7 @@ jne 	clIncorrectValue
 jmp 	colorSuccess
 
 colorSuccess:
-lea 	r15, qword [rbp + 16]
-mov 	dword [r15], eax
+mov 	byte [rbx], al
 
 ;Successful command line input
 mov 	eax, TRUE
@@ -401,7 +433,7 @@ call 	printString
 mov 	eax, FALSE
 jmp 	done
 
-spIncorrectSpec:
+spInvalidSpec:
 mov 	rdi, errSPsp
 call 	printString
 mov 	eax, FALSE
@@ -413,7 +445,7 @@ call 	printString
 mov 	eax, FALSE
 jmp 	done
 
-opIncorrectSpec:
+opInvalidSpec:
 mov 	rdi, errOPsp
 call 	printString
 mov 	eax, FALSE
@@ -604,57 +636,57 @@ colorSet:
 ;iterations = 360.0 / tStep
 ;floating point 32 bit to integer 32 bit register
 movss 	xmm0, dword [limit]
-cvtss2si 	eax, xmm0
-div 	dword [tStep]
+divss 	xmm0, dword [tStep]
+cvtss2si	eax, xmm0
 mov 	dword [iterations], eax
-
 mov 	r12d, dword [t]
 graphLoop:
 
-;radii
-cvtsi2ss	xmm3, dword [radius1]
-addss 		xmm3, dword [radius2]
+;Storing radius
+cvtsi2ss 	xmm9, dword [radius1]
+cvtsi2ss	xmm10, dword [radius2]
+movss 	dword [r1], xmm9
+movss 	dword [r2], xmm10
 
-;(t+s)/2
-movss 	xmm4, dword [t]
-addss 	xmm4, dword [s]
-divss 	xmm4, dword [radius2]
+;x = (radii * cos(t)) + (offPos * cos(radii * ((t+s)/r2)))
 
-;radii * ((t+s)/2)
-movss 	xmm5, xmm4
-mulss 	xmm5, xmm3
-
-;radii * cos(t)
-mov 	rdi, r12
-call 	cosf
-movss 	xmm6, xmm3
-mulss 	xmm6, xmm0
-
-;offPos * cos(radii * (t+s)/r2)
-cvtsi2ss	xmm1, dword [offPos]
-cvtss2si 	rdi, xmm5
-call 	cosf
-mulss 	xmm1, xmm0
-
-;(radii * cos(t)) + (offPos * cos(radii * (t+s)/2))
-movss 	xmm2, xmm6
-addss 	xmm2, xmm1
-movss 	dword [x], xmm2
-
-;radii * sin(t)
-mov 	rdi, r12
-call 	sinf
-mulss 	xmm0, xmm3
-movss 	xmm6, xmm0
-
-;offPos * sin(radii * (t+s)/2)
-cvtsi2ss 	xmm1, dword [offPos]
-cvtss2si 	rdi, xmm5
-call 	sinf
+;r1 + r2
+movss 	xmm0, xmm9
+addss 	xmm0, xmm10
+movss 	dword [radii], xmm0
+movss 	xmm0, dword [t]
+call 	cosf					;cos(t)
+movss 	xmm1, dword [radii]
 mulss 	xmm0, xmm1
+movss 	dword [fltTmp1], xmm0	;radii * cos(t)
+movss 	xmm4, xmm0				;stores radii * cos(t)
+movss	xmm0, dword [t]
+movss 	xmm1, dword [s]
+addss 	xmm0, xmm1			;t+s
+divss 	xmm0, xmm10			;t+s/r2
+movss 	xmm1, dword [radii]
+mulss 	xmm0, xmm1			;radii * t+s/r2
+movss 	dword [fltTmp2], xmm0
+call 	cosf
+movss 	dword [fltTmp1], xmm0
+cvtsi2ss 	xmm1, dword [offPos]
+mulss 	xmm0, xmm1			;offPos * cos(radii * t+s/r2)
+addss 	xmm4, xmm0
+movss 	dword [x], xmm4
 
-;(radii * sin(t)) + (offPos * sin(radii * (t+s)/2))
-addss	xmm6, xmm0
+
+;y = (radii * sin(t)) + (offPos * sin(radii * ((t+s)/r2)))
+movss 	xmm0, dword [t]
+call 	sinf
+movss 	xmm1, dword [radii]
+mulss 	xmm0, xmm1				;radii * sin(t)
+movss 	xmm4, xmm0				;storing radii * sin(t)
+movss 	xmm0, dword [fltTmp2] 	;grabbing radii * t+s/r2
+call 	sinf					;sin(radii * t+s/r2)
+cvtsi2ss 	xmm1, dword [offPos]
+mulss 	xmm0, xmm1				;offPos * sin(radii * t+s/r2)
+addss 	xmm4, xmm0				;(radii * sin(t)) + (offPos * sin(radii * ((t+s)/r2)))
+movss 	dword [y], xmm4
 
 inc 	r12d
 cmp 	r12d, dword [iterations]
@@ -671,10 +703,12 @@ jb 		graphLoop
 
 ;	YOUR CODE GOES HERE
 ;sStep = speed / scale
-movss 	xmm0, dword [speed]
+cvtsi2ss 	xmm0, dword [speed]
 divss 	xmm0, dword [scale]
-addss 	xmm0, dword [s]
-movss 	dword [s], xmm0
+movss 	dword [sStep], xmm0
+movss 	xmm1, dword [s]
+addss 	xmm1, xmm0
+movss 	dword [s], xmm1
 
 ; -----
 ;  Ensure openGL knows to call again
@@ -748,10 +782,16 @@ mov 	rax, 0
 
 stringSize:						;Gets the size of the current string
 mov 	al, byte [rdi + rcx]
+cmp 	al, 0
+je 		skipChecks
+cmp 	al, 48
+jb 		invalidChar
+cmp 	al, 57
+ja 		invalidChar
+skipChecks:
 inc 	rcx
 cmp 	al, NULL
 jne 	stringSize
-
 dec 	rcx							;size ignores NULL
 mov 	rbx, 0						;used to increment through string
 mov 	r13, 6						;base for conversion to digit
@@ -784,7 +824,12 @@ cmp 	rcx, 0						;if string is out of chars
 jne 	toDigit
 
 mov 	eax, r14d
+jmp 	toDigitComplete
 
+invalidChar:
+mov 	eax, -1
+
+toDigitComplete:
 pop 	r14
 pop 	r11
 pop 	r13
