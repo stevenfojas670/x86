@@ -627,7 +627,10 @@ mov 	byte [blue], 255
 jmp 	colorSet
 
 colorSet:
-
+mov 	rdi, qword [red]
+mov 	rsi, qword [green]
+mov 	rdx, qword [blue]
+call 	glColor3ub
 ; -----
 ;  Loop initializations and main plotting loop
 
@@ -637,56 +640,52 @@ colorSet:
 ;floating point 32 bit to integer 32 bit register
 movss 	xmm0, dword [limit]
 divss 	xmm0, dword [tStep]
-cvtss2si	eax, xmm0
+cvtss2si 	eax, xmm0
 mov 	dword [iterations], eax
-mov 	r12d, dword [t]
+cvtss2si 	r12d, dword [t]
 graphLoop:
+cvtsi2ss 	xmm6, dword [radius1]
+cvtsi2ss	xmm7, dword [radius2]
+cvtsi2ss 	xmm8, dword [offPos]
 
-;Storing radius
-cvtsi2ss 	xmm9, dword [radius1]
-cvtsi2ss	xmm10, dword [radius2]
-movss 	dword [r1], xmm9
-movss 	dword [r2], xmm10
+movss 	dword [r1], xmm6
+movss 	dword [r2], xmm7
+movss 	dword [ofp], xmm8
 
-;x = (radii * cos(t)) + (offPos * cos(radii * ((t+s)/r2)))
+movss 	xmm0, dword [r1]
+addss 	xmm0, dword [r2]
+movss 	dword [radii], xmm0		;r1 + r2
 
-;r1 + r2
-movss 	xmm0, xmm9
-addss 	xmm0, xmm10
-movss 	dword [radii], xmm0
 movss 	xmm0, dword [t]
-call 	cosf					;cos(t)
-movss 	xmm1, dword [radii]
-mulss 	xmm0, xmm1
-movss 	dword [fltTmp1], xmm0	;radii * cos(t)
-movss 	xmm4, xmm0				;stores radii * cos(t)
-movss	xmm0, dword [t]
-movss 	xmm1, dword [s]
-addss 	xmm0, xmm1			;t+s
-divss 	xmm0, xmm10			;t+s/r2
-movss 	xmm1, dword [radii]
-mulss 	xmm0, xmm1			;radii * t+s/r2
-movss 	dword [fltTmp2], xmm0
 call 	cosf
-movss 	dword [fltTmp1], xmm0
-cvtsi2ss 	xmm1, dword [offPos]
-mulss 	xmm0, xmm1			;offPos * cos(radii * t+s/r2)
-addss 	xmm4, xmm0
-movss 	dword [x], xmm4
+mulss 	xmm0, dword [radii]		;radii * cos(t)
+movss 	xmm4, xmm0
 
-
-;y = (radii * sin(t)) + (offPos * sin(radii * ((t+s)/r2)))
 movss 	xmm0, dword [t]
-call 	sinf
-movss 	xmm1, dword [radii]
-mulss 	xmm0, xmm1				;radii * sin(t)
-movss 	xmm4, xmm0				;storing radii * sin(t)
-movss 	xmm0, dword [fltTmp2] 	;grabbing radii * t+s/r2
+addss 	xmm0, dword [s]
+divss 	xmm0, dword [r2]		;t+s/r2
+
+mulss 	xmm0, dword [radii]		;radii * t+s/r2
+movss 	dword [fltTmp2], xmm0
+call 	cosf					;cos(radii * t+s/r2)
+mulss 	xmm0, dword [ofp]		;offPos * cos(radii * t+s/r2)
+addss 	xmm4, xmm0				;(radii * cos(t)) + (offPos * cos(radii * ((t+s)/r2)))
+movss 	dword [x], xmm4			;x = (radii * cos(t)) + (offPos * cos(radii * ((t+s)/r2)))
+
+movss 	xmm0, dword [t]
+call 	sinf					;sin(t)
+mulss 	xmm0, dword [radii]		;radii * sin(t)
+movss 	xmm4, xmm0
+
+movss 	xmm0, dword [fltTmp2]
 call 	sinf					;sin(radii * t+s/r2)
-cvtsi2ss 	xmm1, dword [offPos]
-mulss 	xmm0, xmm1				;offPos * sin(radii * t+s/r2)
+mulss 	xmm0, dword [ofp]		;offPos * sin(radii * t+s/r2)
 addss 	xmm4, xmm0				;(radii * sin(t)) + (offPos * sin(radii * ((t+s)/r2)))
-movss 	dword [y], xmm4
+movss 	dword [y], xmm4			;y = (radii * sin(t)) + (offPos * sin(radii * ((t+s)/r2)))
+
+movss 	xmm0, dword [x]
+movss 	xmm1, dword [y]
+call 	glVertex2f
 
 inc 	r12d
 cmp 	r12d, dword [iterations]

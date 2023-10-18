@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 						&speed, &color);
 
 	// Debug call for display function
-	//drawSpiro();
+	drawSpiro();
 
 	if (stat) {
 		glutInit(&argc, argv);
