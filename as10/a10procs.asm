@@ -642,7 +642,9 @@ movss 	xmm0, dword [limit]
 divss 	xmm0, dword [tStep]
 cvtss2si 	eax, xmm0
 mov 	dword [iterations], eax
-cvtss2si 	r12d, dword [t]
+mov 	r12, 0
+movss 	xmm0, dword [fltZero]
+movss 	dword [t], xmm0
 graphLoop:
 cvtsi2ss 	xmm6, dword [radius1]
 cvtsi2ss	xmm7, dword [radius2]
@@ -658,14 +660,14 @@ movss 	dword [radii], xmm0		;r1 + r2
 
 movss 	xmm0, dword [t]
 call 	cosf
+movss 	dword [fltTmp1], xmm0
 mulss 	xmm0, dword [radii]		;radii * cos(t)
 movss 	xmm4, xmm0
 
 movss 	xmm0, dword [t]
 addss 	xmm0, dword [s]
-divss 	xmm0, dword [r2]		;t+s/r2
-
-mulss 	xmm0, dword [radii]		;radii * t+s/r2
+mulss 	xmm0, dword [radii]
+divss 	xmm0, dword [r2]		;radii * t+s/r2
 movss 	dword [fltTmp2], xmm0
 call 	cosf					;cos(radii * t+s/r2)
 mulss 	xmm0, dword [ofp]		;offPos * cos(radii * t+s/r2)
@@ -687,7 +689,10 @@ movss 	xmm0, dword [x]
 movss 	xmm1, dword [y]
 call 	glVertex2f
 
-inc 	r12d
+inc 	r12
+movss 	xmm0, dword [t]
+addss 	xmm0, dword [tStep]
+movss 	dword [t], xmm0
 cmp 	r12d, dword [iterations]
 jb 		graphLoop
 
@@ -705,9 +710,9 @@ jb 		graphLoop
 cvtsi2ss 	xmm0, dword [speed]
 divss 	xmm0, dword [scale]
 movss 	dword [sStep], xmm0
-movss 	xmm1, dword [s]
-addss 	xmm1, xmm0
-movss 	dword [s], xmm1
+movss 	xmm0, dword [s]
+addss 	xmm0, dword [sStep]
+movss 	dword [s], xmm0
 
 ; -----
 ;  Ensure openGL knows to call again
