@@ -208,25 +208,48 @@ mov 	rdi, qword [rsi + r10 * 8]
 call 	checkFileExtension
 pop 	rdi
 cmp 	eax, TRUE
-jne 	invalidFileName
+jne 	invalidReadFileName
 push 	rdi
-push 	rsi
-mov 	rax, SYS_open
-mov  	rdi, qword [rsi + r10 * 8]
-mov 	rsi, O_RDONLY
-syscall
-cmp 	rax, 0
-jb 		openFail
+mov 	rdi, qword [rsi + r10 * 8]			;opening argv[2] "image0.bmp" etc
+call 	openFile
 pop 	rdi
-pop 	rsi
+cmp 	rax, 0
+jb 		openFileError
+inc 	r10
+push 	rdi
+mov 	rdi, qword [rsi + r10 * 8]			;checking file argv[3] "newFile.bmp" etc
+call 	checkFileExtension
+pop 	rdi
+cmp 	eax, TRUE
+jne 	invalidWriteFileName
+push 	rdi
+call  	createFile							;creating file argv[3] "newFile.bmp" etc
+pop 	rdi
+cmp 	rax, 0
+jb 		createFileError
 
-invalidFileName:
+mov 	eax, TRUE
+
+jmp 	done
+createFileError:
+mov 	rdi, errWriteFile
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+invalidWriteFileName:
+mov 	rdi, errWriteName
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+invalidReadFileName:
 mov 	rdi, errReadName
 call 	printString
 mov 	eax, FALSE
 jmp 	done
 
-openFail:
+openFileError:
 mov 	rdi, errReadFile
 call 	printString
 mov 	eax, FALSE
@@ -482,31 +505,33 @@ prtDone:
 
 ; ******************************************************************
 
-;filename string (address) - rdx
+;filename string (address) - rdi
+;current position (value) - rsi
 ;return TRUE or FALSE
 global checkFileExtension
 checkFileExtension:
 
 push 	r10
 
+mov 	r10, 0
 searchExt:
-mov 	al, byte [rdx + r10]
+mov 	al, byte [rdi + r10]
 inc 	r10
 cmp 	al, 46
 jne 	searchExt
-mov 	al, byte [rdx + r10]
+mov 	al, byte [rdi + r10]
 cmp 	al, 98
 jne 	invalidFileExtension
 inc 	r10
-mov 	al, byte [rdx + r10]
+mov 	al, byte [rdi + r10]
 cmp 	al, 109
 jne 	invalidFileExtension
 inc 	r10
-mov 	al, byte [rdx + r10]
+mov 	al, byte [rdi + r10]
 cmp 	al, 112
 jne 	invalidFileExtension
 inc 	r10
-mov 	al, byte [rdx + r10]
+mov 	al, byte [rdi + r10]
 cmp 	al, NULL
 jne 	invalidFileExtension
 
@@ -517,6 +542,42 @@ invalidFileExtension:
 mov 	eax, FALSE
 
 extensionReturn:
+pop 	r10
+
+ret
+
+;Open File
+;filename (address) - rdi
+global openFile
+openFile:
+
+push 	r10
+
+lea 	r10, qword [rdi]
+
+mov 	rax, SYS_open
+mov 	rdi, r10
+mov 	rsi, O_RDONLY
+syscall
+
+pop 	r10
+
+ret
+
+;Create File
+;filename (address) - rdi
+global 	createFile
+createFile:
+
+push 	r10
+
+lea 	r10, qword [rdi]
+
+mov 	rax, SYS_creat
+mov 	rdi, r10
+mov 	rsi, S_IRUSR | S_IWUSR
+syscall
+
 pop 	r10
 
 ret
