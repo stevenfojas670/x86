@@ -142,17 +142,127 @@ section	.text
 
 ; -----
 ;  Arguments:
-;	argc (value)
-;	argv table (address)
-;	image option variable, ENUM type, (address)
-;	read file descriptor (address)
-;	write file descriptor (address)
+;	argc (value) rdi
+;	argv table (address) rsi
+;	image option variable, ENUM type, (address) rdx
+;	read file descriptor (address) rcx
+;	write file descriptor (address) r8
 ;  Returns:
 ;	TRUE or FALSE
 
 
 ;	YOUR CODE GOES HERE
+global getArguments
+getArguments:
 
+push 	rbp
+mov 	rbp, rsp
+push 	r10
+push 	r11
+push 	r15
+
+; cmp 	rdi, 1
+; jbe 	incorrectUsage
+
+; cmp 	rdi, 3
+; jb 		tooFewArgs
+
+; cmp 	rdi, 3
+; ja 		tooManyArgs
+
+mov 	r10, 1			;argv counter
+mov  	r11, 0 			;argv string counter
+
+;Check first input
+mov 	r15, qword [rsi + r10 * 8]
+mov 	al, byte [r15 + r11]
+cmp 	al, 45
+jne 	imInvalid
+inc 	r11
+mov 	al, byte [r15 + r11]
+cmp 	al, 103					;check "-gr"
+jne 	checkB
+mov 	dword [rdx], GRAYSCALE
+jmp 	checkSecondInput
+checkB:
+cmp 	al, 98					;check "-br"
+jne 	checkD
+inc 	r11
+cmp 	al, 114
+jne 	imInvalid
+mov 	dword [rdx], BRIGHTEN
+jmp 	checkSecondInput
+checkD:
+cmp 	al, 100					;check "-dk"
+jne 	imInvalid
+inc 	r11
+cmp 	al, 107
+jne 	imInvalid
+mov 	dword [rdx], DARKEN
+
+checkSecondInput:
+inc 	r10
+mov 	r11, 0
+push 	rdi
+mov 	rdi, qword [rsi + r10 * 8]
+call 	checkFileExtension
+pop 	rdi
+cmp 	eax, TRUE
+jne 	invalidFileName
+push 	rdi
+push 	rsi
+mov 	rax, SYS_open
+mov  	rdi, qword [rsi + r10 * 8]
+mov 	rsi, O_RDONLY
+syscall
+cmp 	rax, 0
+jb 		openFail
+pop 	rdi
+pop 	rsi
+
+invalidFileName:
+mov 	rdi, errReadName
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+openFail:
+mov 	rdi, errReadFile
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+imInvalid:
+mov 	rdi, errOption
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+incorrectUsage:
+mov 	rdi, usageMsg
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+tooFewArgs:
+mov 	rdi, errIncomplete
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+tooManyArgs:
+mov 	rdi, errExtra
+call 	printString
+mov 	eax, FALSE
+jmp 	done
+
+done:
+pop 	r15
+pop 	r11
+pop 	r10
+pop 	rbp
+
+ret
 
 
 ; ***************************************************************
@@ -190,7 +300,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global processHeaders
+processHeaders:
 
+ret
 
 
 ; ***************************************************************
@@ -219,7 +332,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global 	getRow
+getRow:
 
+ret
 
 
 ; ***************************************************************
@@ -246,7 +362,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global writeRow
+writeRow:
 
+ret
 
 
 ; ***************************************************************
@@ -264,7 +383,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global imageCvtToBW
+imageCvtToBW:
 
+ret
 
 
 ; ***************************************************************
@@ -282,7 +404,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global imageBrighten
+imageBrighten:
 
+ret
 
 
 ; ***************************************************************
@@ -300,7 +425,10 @@ section	.text
 
 
 ;	YOUR CODE GOES HERE
+global 	imageDarken
+imageDarken:
 
+ret
 
 
 ; ******************************************************************
@@ -354,3 +482,41 @@ prtDone:
 
 ; ******************************************************************
 
+;filename string (address) - rdx
+;return TRUE or FALSE
+global checkFileExtension
+checkFileExtension:
+
+push 	r10
+
+searchExt:
+mov 	al, byte [rdx + r10]
+inc 	r10
+cmp 	al, 46
+jne 	searchExt
+mov 	al, byte [rdx + r10]
+cmp 	al, 98
+jne 	invalidFileExtension
+inc 	r10
+mov 	al, byte [rdx + r10]
+cmp 	al, 109
+jne 	invalidFileExtension
+inc 	r10
+mov 	al, byte [rdx + r10]
+cmp 	al, 112
+jne 	invalidFileExtension
+inc 	r10
+mov 	al, byte [rdx + r10]
+cmp 	al, NULL
+jne 	invalidFileExtension
+
+mov 	eax, TRUE
+jmp 	extensionReturn
+
+invalidFileExtension:
+mov 	eax, FALSE
+
+extensionReturn:
+pop 	r10
+
+ret
