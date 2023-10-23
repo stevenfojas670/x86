@@ -210,20 +210,27 @@ pop 	rdi
 cmp 	eax, TRUE
 jne 	invalidReadFileName
 push 	rdi
+push 	rsi
 mov 	rdi, qword [rsi + r10 * 8]			;opening argv[2] "image0.bmp" etc
 call 	openFile
+pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		openFileError
 inc 	r10
 push 	rdi
+push 	rsi
 mov 	rdi, qword [rsi + r10 * 8]			;checking file argv[3] "newFile.bmp" etc
 call 	checkFileExtension
+pop 	rsi
 pop 	rdi
 cmp 	eax, TRUE
 jne 	invalidWriteFileName
 push 	rdi
+push 	rsi
+mov 	rdi, qword [rsi + r10 * 8]
 call  	createFile							;creating file argv[3] "newFile.bmp" etc
+pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		createFileError
