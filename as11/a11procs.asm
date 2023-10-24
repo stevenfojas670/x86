@@ -159,6 +159,8 @@ push 	rbp
 mov 	rbp, rsp
 push 	r10
 push 	r11
+push 	r12
+push 	r13
 push 	r15
 
 ; cmp 	rdi, 1
@@ -172,6 +174,8 @@ push 	r15
 
 mov 	r10, 1			;argv counter
 mov  	r11, 0 			;argv string counter
+mov 	r12, rcx		;read file descriptor
+mov 	r13, r8			;write file descriptor
 
 ;Check first input
 mov 	r15, qword [rsi + r10 * 8]
@@ -217,6 +221,7 @@ pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		openFileError
+mov 	qword [r12], rax
 inc 	r10
 push 	rdi
 push 	rsi
@@ -234,6 +239,7 @@ pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		createFileError
+mov 	qword [r13], rax
 
 mov 	eax, TRUE
 
@@ -288,6 +294,8 @@ jmp 	done
 
 done:
 pop 	r15
+pop 	r13
+pop 	r12
 pop 	r11
 pop 	r10
 pop 	rbp
@@ -316,11 +324,11 @@ ret
 
 ; -----
 ;   Arguments:
-;	read file descriptor (value)
-;	write file descriptor (value)
-;	file size (address)
-;	image width (address)
-;	image height (address)
+;	read file descriptor (value) rdi
+;	write file descriptor (value) rsi
+;	file size (address) rdx
+;	image width (address) rcx 
+;	image height (address) r8
 
 ;  Returns:
 ;	file size (via reference)
@@ -338,12 +346,14 @@ push 	r10
 push 	r11
 push 	r12
 push 	r13
+push 	r14
+push 	r15
 
 mov 	rbx, rdi
 mov 	r10, 0
-mov 	r11, rdx
 mov 	r12, rcx		;image width
 mov 	r13, r8			;image height
+mov 	r15, rdx		;file size
 push 	rdi
 push 	rsi
 push 	rdx
@@ -366,26 +376,47 @@ inc 	r10
 mov 	al, byte [header + r10]
 cmp 	al, 77
 jne 	fileTypeError
-add 	r10, 4						;file size
-mov 	eax, dword [header + r10]
-mov 	dword [r11], eax
-add 	r10, 8						;Size of header
-mov 	eax, dword [header + r10]
-cmp 	eax, 24
-jne 	depthError
-add 	r10, 4						;compression type
-mov 	eax, dword [header + r10]
-cmp 	eax, 0
-jne 	compTypeError	
-add 	r10, 4						;image width
-mov 	eax, dword [header + r10]
-mov 	dword [r12], eax
-add 	r10, 4						;image height
-mov 	eax, dword [header + r10]
+inc 	r10							
+mov 	eax, dword [header + r10]	;file size
+mov 	dword [r15], eax			;storing file size
+add 	r10, 8						
+mov 	eax, dword [header + r10]	;Size of header
+cmp 	eax, 54
+jne 	invalidBitmapSize
+mov 	r14d, eax					;storing header size for comparison
+add 	r10, 4						
+mov 	eax, dword [header + r10]	;offset to start of image data in bytes
+add 	r10, 4						
+mov 	eax, dword [header + r10]	;image width
+mov 	dword [r12], eax	
+add 	r10, 4						
+mov 	eax, dword [header + r10]	;image height
 mov 	dword [r13], eax
-inc 	r10, 2
-mov 	eax, dword [header + r10]
-inc 	r10, 2
+add 	r10, 4						
+mov 	ax, word [header + r10]		;number of planes
+add 	r10, 2						
+mov 	ax, word [header + r10]		;number of bits per pixel
+cmp 	ax, 24
+jne 	depthError
+add 	r10, 2						
+mov 	eax, dword [header + r10]	;Compresssion type
+cmp 	eax, 0
+jne 	compTypeError
+add 	r10, 4						
+mov 	eax, dword [header + r10]	;Image size
+add 	eax, r14d					;image size + header size
+mov 	r11d, dword [r15]
+cmp 	dword [r15], eax			;file size == image size + header size
+jne 	invalidBitmapSize
+
+mov 	eax, TRUE
+jmp 	done1
+
+invalidBitmapSize:
+mov 	rdi, errSize
+call 	printString
+mov 	eax, FALSE
+jmp		done1
 
 compTypeError:
 mov 	rdi, errCompType
@@ -412,6 +443,8 @@ mov 	eax, FALSE
 jmp 	done1
 
 done1:
+pop 	r15
+pop 	r14
 pop 	r13
 pop 	r12
 pop 	r11
