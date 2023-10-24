@@ -221,7 +221,7 @@ pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		openFileError
-mov 	qword [r12], rax
+mov 	qword [r12], rax					;read file descriptor
 inc 	r10
 push 	rdi
 push 	rsi
@@ -239,7 +239,7 @@ pop 	rsi
 pop 	rdi
 cmp 	rax, 0
 jb 		createFileError
-mov 	qword [r13], rax
+mov 	qword [r13], rax					;write file descriptor
 
 mov 	eax, TRUE
 
@@ -349,7 +349,7 @@ push 	r13
 push 	r14
 push 	r15
 
-mov 	rbx, rdi
+mov 	rbx, rdi		;read file descriptor
 mov 	r10, 0
 mov 	r12, rcx		;image width
 mov 	r13, r8			;image height
@@ -409,7 +409,27 @@ mov 	r11d, dword [r15]
 cmp 	dword [r15], eax			;file size == image size + header size
 jne 	invalidBitmapSize
 
+;Write to output file
+mov 	r12, rsi					;storing file descriptor
+push 	rsi
+push 	rdx
+mov 	rax, SYS_write
+mov 	rdi, r12
+mov 	rsi, header
+mov 	rdx, HEADER_SIZE
+syscall
+pop 	rdx
+cmp 	eax, 0
+jb 		errorToWrite
+mov 	qword [r12], rax			;storing write file descriptor
+
 mov 	eax, TRUE
+jmp 	done1
+
+errorToWrite:
+mov 	rdi, errWriteFile
+call 	printString
+mov 	eax, FALSE
 jmp 	done1
 
 invalidBitmapSize:
@@ -463,9 +483,9 @@ ret
 ;	status = getRow(readFileDesc, picWidth, rowBuffer);
 
 ;   Arguments:
-;	read file descriptor (value)
-;	image width (value)
-;	row buffer (address)
+;	read file descriptor (value) rdi
+;	image width (value) rsi
+;	row buffer (address) rdx
 ;  Returns:
 ;	TRUE or FALSE
 
@@ -482,6 +502,36 @@ ret
 ;	YOUR CODE GOES HERE
 global 	getRow
 getRow:
+
+push 	rbx
+push 	r10
+push 	r15
+
+mov 	rbx, rdi			;file descriptor
+mov 	r10, rsi			;image width
+mov 	r15, rdx			;row buffer
+
+mov 	rax, SYS_read		;read starting image
+mov 	rdi, rbx	
+mov 	rsi, r15
+mov 	rdx, BUFF_SIZE
+syscall
+cmp 	rax, 0
+jb 		readError
+
+mov 	eax, TRUE
+jmp 	done2
+
+readError:
+mov 	rdi, errReadFile
+call 	printString
+mov 	eax, FALSE
+jmp 	done2
+
+done2:
+pop 	r15
+pop 	r10
+pop 	rbx
 
 ret
 
@@ -524,8 +574,8 @@ ret
 ;	status = imageCvtToBW(picWidth, rowBuffer);
 
 ;  Arguments are:
-;	image width (value)
-;	row buffer (address)
+;	image width (value) rdi
+;	row buffer (address) rsi
 ;  Returns:
 ;	updated row buffer (via reference)
 
@@ -533,6 +583,53 @@ ret
 ;	YOUR CODE GOES HERE
 global imageCvtToBW
 imageCvtToBW:
+
+push 	rbx
+push 	r10
+push 	r12
+push 	r13
+push 	r14
+push 	r15
+
+mov 	rbx, rdi		;width
+mov 	r10, rsi		;row buffer
+mov 	r12, 0			;counter
+mov 	r13, 0			;store bytes from buffer
+mov 	rax, 0
+mov 	r15, 0			;rgb counter
+mov 	r14, 3			;quotient
+
+cvtToBw:
+mov 	r13b, byte [r10 + r12]
+add 	eax, r13d
+inc 	r15			;counts the 3 bytes of rgb
+inc 	r12
+cmp 	r15, 3
+je 		cvtColor
+cmp 	r12, r10	;checking if we've gone through all pixels
+jb 		cvtToBw
+
+cvtColor:
+div 	r14w					;old red + old blue + old green / 3
+push 	r12						;saving the buffer position
+sub 	r12, 3
+mov 	byte [r10 + r12], al
+inc 	r12
+mov 	byte [r10 + r12], al
+inc 	r12
+mov 	byte [r10 + r12], al
+mov 	r15, 0					;reset rgb counter
+mov 	rax, 0					;reset the register storing the sum of oldR, oldB, oldG
+pop 	r12						;getting the buffer position back
+jmp 	cvtToBw
+
+pop 	r15
+pop 	r14
+pop 	r13
+pop 	r12
+pop 	r10
+pop 	rbx
+
 
 ret
 
