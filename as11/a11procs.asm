@@ -333,6 +333,91 @@ ret
 global processHeaders
 processHeaders:
 
+push 	rbx
+push 	r10
+push 	r11
+push 	r12
+push 	r13
+
+mov 	rbx, rdi
+mov 	r10, 0
+mov 	r11, rdx
+mov 	r12, rcx		;image width
+mov 	r13, r8			;image height
+push 	rdi
+push 	rsi
+push 	rdx
+mov 	rax, SYS_read
+mov 	rdi, rbx
+mov 	rsi, header
+mov 	rdx, HEADER_SIZE
+syscall
+pop 	rdx
+pop 	rsi
+pop 	rdi
+cmp 	eax, 0
+jb 		errorOnRead
+
+;Validate BM
+mov 	al, byte [header + r10]
+cmp 	al, 66
+jne 	fileTypeError
+inc 	r10
+mov 	al, byte [header + r10]
+cmp 	al, 77
+jne 	fileTypeError
+add 	r10, 4						;file size
+mov 	eax, dword [header + r10]
+mov 	dword [r11], eax
+add 	r10, 8						;Size of header
+mov 	eax, dword [header + r10]
+cmp 	eax, 24
+jne 	depthError
+add 	r10, 4						;compression type
+mov 	eax, dword [header + r10]
+cmp 	eax, 0
+jne 	compTypeError	
+add 	r10, 4						;image width
+mov 	eax, dword [header + r10]
+mov 	dword [r12], eax
+add 	r10, 4						;image height
+mov 	eax, dword [header + r10]
+mov 	dword [r13], eax
+inc 	r10, 2
+mov 	eax, dword [header + r10]
+inc 	r10, 2
+
+compTypeError:
+mov 	rdi, errCompType
+call 	printString
+mov 	eax, FALSE
+jmp 	done1
+
+depthError:
+mov 	rdi, errDepth
+call 	printString
+mov 	eax, FALSE
+jmp 	done1
+
+fileTypeError:
+mov 	rdi, errFileType
+call 	printString
+mov 	eax, FALSE
+jmp 	done1
+
+errorOnRead:
+mov 	rdi, errReadHdr
+call 	printString
+mov 	eax, FALSE
+jmp 	done1
+
+done1:
+pop 	r13
+pop 	r12
+pop 	r11
+pop 	r10
+pop 	rbx
+
 ret
 
 
