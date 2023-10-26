@@ -220,7 +220,7 @@ call 	openFile
 pop 	rsi
 pop 	rdi
 cmp 	rax, 0
-jb 		openFileError
+jl 		openFileError
 mov 	qword [r12], rax					;read file descriptor
 inc 	r10
 push 	rdi
@@ -238,7 +238,7 @@ call  	createFile							;creating file argv[3] "newFile.bmp" etc
 pop 	rsi
 pop 	rdi
 cmp 	rax, 0
-jb 		createFileError
+jl 		createFileError
 mov 	qword [r13], rax					;write file descriptor
 
 mov 	eax, TRUE
@@ -363,7 +363,7 @@ mov 	rsi, header
 mov 	rdx, HEADER_SIZE
 syscall
 cmp 	rax, 0
-jb 		errorOnRead
+jl		errorOnRead
 
 ;Validate BM
 mov 	al, byte [header + r10]
@@ -420,7 +420,7 @@ mov 	rsi, header
 mov 	rdx, HEADER_SIZE
 syscall
 cmp 	rax, 0
-jb 		errorToWrite
+jl		errorToWrite
 
 mov 	eax, TRUE
 jmp 	done1
@@ -517,49 +517,49 @@ mul 	r10
 mov 	r10, rax			;picWidth * 3
 mov 	r14, qword [buffMax]
 
-cmp 	qword [curr], r14
-jne 	getNextChr
+cmp 	byte [wasEOF], TRUE
+je 		doNotRead
+cmp 	qword [curr], r14				;if curr < amountRead
+jb 		getNextChr
 
+readFromFile:
 mov 	rax, SYS_read
 mov 	rdi, rbx
 mov 	rsi, localBuffer
 mov 	rdx, BUFF_SIZE
 syscall
 cmp 	rax, 0
-jb 		readError
-mov 	rax, 0
+jl 		readError
+cmp 	rax, r10
+jl 		endOfFile
+mov 	qword [buffMax], rax			;this is the amount read
 mov 	qword [curr], 0					;setting curr to 0
-mov 	r11, 0
-validateSize:
-mov 	al, byte [localBuffer + r11]
-cmp 	al, LF
-je 		sizeFound
-inc 	r11
-cmp 	r11, BUFF_SIZE
-jb 		validateSize
-sizeFound:						
-mov 	qword [pixelCount], r11			;localBuffer size in bytes / 3 = pixelCount
-mov 	rax, 0							;reset rax
 getNextChr:
 mov 	r11, qword [curr]
 mov 	r14, 0							;counter for rowBuffer
+mov 	rax, 0							;reset rax
 moveToRow:
 mov 	al, byte [localBuffer + r11]	;chr = localBuffer[i]
 mov 	byte [r15 + r14], al			;rowBuffer[i] = chr
-cmp 	al, LF
-je 		endOfFile
 inc 	r11
 inc 	r14
 mov 	qword [curr], r11				;curr < picWidth * 3 then increment curr
-cmp 	r11, r10
+cmp 	r11, qword [buffMax]
+je 		readFromFile
+cmp 	r14, r10
 jb 		moveToRow
 
 mov 	eax, TRUE
 jmp 	done2
 
 endOfFile:
+mov 	qword [buffMax], rax
 mov 	eax, FALSE						;return false
 mov 	byte [wasEOF], TRUE				;set EOF true
+jmp 	done2
+
+doNotRead:
+mov 	eax, FALSE
 jmp 	done2
 
 readError:
@@ -609,21 +609,26 @@ push 	rbx
 push 	r10
 push 	r11
 
-mov 	rbx, rdi			;write file descriptor
+mov 	rbx, rdx			;rowBuffer address
+mov 	r10, rdi			;write file descriptor
 mov 	rax, rsi
-mov 	r10, 3
-mul 	r10
-mov 	r10, rax			;width * 3
-mov 	rax, 0
-mov 	r11, rdx			;rowBuffer
+mov 	r11, 3
+push 	rdx
+mul 	r11
+pop 	rdx
+mov 	r11, rax			;picWidth*3
 
+cmp 	byte [wasEOF], TRUE
+jne 	writeToFile
+mov 	r11, qword [buffMax]
+writeToFile:
 mov 	rax, SYS_write
-mov 	rdi, rbx
-mov 	rsi, r11
-mov 	rdx, r10
+mov 	rdi, r10
+mov 	rsi, rbx
+mov 	rdx, r11
 syscall
 cmp 	rax, 0
-jb 	 	errorOnWrite
+jl 		errorOnWrite
 
 mov 	eax, TRUE
 jmp 	done3
