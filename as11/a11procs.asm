@@ -1,9 +1,9 @@
 ; *****************************************************************
-;  Name: 
-;  NSHE_ID: 
-;  Section: 
+;  Name: Steven Fojas
+;  NSHE_ID: 2001342715
+;  Section: 1003
 ;  Assignment: 11
-;  Description:
+;  Description: Using Syscalls and buffer I/O to change modify bmp files
 
 
 ; ***********************************************************************
@@ -386,6 +386,13 @@ mov 	eax, dword [header + r10]	;offset to start of image data in bytes
 add 	r10, 4						
 mov 	eax, dword [header + r10]	;image width
 mov 	dword [r12], eax	
+push 	rax
+push 	r10
+mov 	r10d, 3
+mul 	r10d
+mov 	qword [pixelCount], r10		;getting picWidth * 3
+pop 	r10
+pop 	rax
 add 	r10, 4						
 mov 	eax, dword [header + r10]	;image height
 mov 	dword [r13], eax
@@ -499,6 +506,7 @@ getRow:
 push 	rbx
 push 	r10
 push 	r11
+push 	r14
 push 	r15
 
 mov 	rbx, rdi			;file descriptor
@@ -507,9 +515,10 @@ mov 	r15, rdx			;row buffer
 mov 	r10, 3
 mul 	r10
 mov 	r10, rax			;picWidth * 3
+mov 	r14, qword [buffMax]
 
-cmp 	byte [wasEOF], TRUE
-je 		endOfFile
+cmp 	qword [curr], r14
+jne 	getNextChr
 
 mov 	rax, SYS_read
 mov 	rdi, rbx
@@ -518,16 +527,35 @@ mov 	rdx, BUFF_SIZE
 syscall
 cmp 	rax, 0
 jb 		readError
-mov 	r11, qword [pixelCount]
-moveBuffer:
+mov 	rax, 0
+mov 	qword [curr], 0					;setting curr to 0
+mov 	r11, 0
+validateSize:
 mov 	al, byte [localBuffer + r11]
-cmp 	al, LF							;checking if localBuffer[i] = LF
-je 		endOfFile
-mov 	byte [r15], al					;placing localBuffer[i] into rowBuffer[i]
+cmp 	al, LF
+je 		sizeFound
 inc 	r11
-cmp 	r11, r10						;counter < picWidth
-jb 		moveBuffer
-mov		qword [pixelCount], r11
+cmp 	r11, BUFF_SIZE
+jb 		validateSize
+sizeFound:						
+mov 	qword [pixelCount], r11			;localBuffer size in bytes / 3 = pixelCount
+mov 	rax, 0							;reset rax
+getNextChr:
+mov 	r11, qword [curr]
+mov 	r14, 0							;counter for rowBuffer
+moveToRow:
+mov 	al, byte [localBuffer + r11]	;chr = localBuffer[i]
+mov 	byte [r15 + r14], al			;rowBuffer[i] = chr
+cmp 	al, LF
+je 		endOfFile
+inc 	r11
+inc 	r14
+mov 	qword [curr], r11				;curr < picWidth * 3 then increment curr
+cmp 	r11, r10
+jb 		moveToRow
+
+mov 	eax, TRUE
+jmp 	done2
 
 endOfFile:
 mov 	eax, FALSE						;return false
@@ -542,6 +570,7 @@ jmp 	done2
 
 done2:
 pop 	r15
+pop 	r14
 pop 	r11
 pop 	r10
 pop 	rbx
@@ -559,9 +588,9 @@ ret
 ;	status = writeRow(writeFileDesc, pciWidth, rowBuffer);
 
 ;  Arguments are:
-;	write file descriptor (value)
-;	image width (value)
-;	row buffer (address)
+;	write file descriptor (value) rdi
+;	image width (value) rsi
+;	row buffer (address) rdx
 
 ;  Returns:
 ;	TRUE or FALSE
@@ -575,6 +604,40 @@ ret
 ;	YOUR CODE GOES HERE
 global writeRow
 writeRow:
+
+push 	rbx
+push 	r10
+push 	r11
+
+mov 	rbx, rdi			;write file descriptor
+mov 	rax, rsi
+mov 	r10, 3
+mul 	r10
+mov 	r10, rax			;width * 3
+mov 	rax, 0
+mov 	r11, rdx			;rowBuffer
+
+mov 	rax, SYS_write
+mov 	rdi, rbx
+mov 	rsi, r11
+mov 	rdx, r10
+syscall
+cmp 	rax, 0
+jb 	 	errorOnWrite
+
+mov 	eax, TRUE
+jmp 	done3
+
+errorOnWrite:
+mov 	rdi, errWrite
+call 	printString
+mov 	eax, FALSE
+jmp 	done3
+
+done3:
+pop 	r11
+pop 	r10
+pop 	rbx
 
 ret
 
@@ -637,7 +700,8 @@ mov 	byte [r10 + r12], al
 mov 	r15, 0					;reset rgb counter
 mov 	rax, 0					;reset the register storing the sum of oldR, oldB, oldG
 pop 	r12						;getting the buffer position back
-jmp 	cvtToBw
+cmp 	r12, rbx
+jb 		cvtToBw
 
 pop 	r15
 pop 	r14
