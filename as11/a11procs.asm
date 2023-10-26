@@ -211,7 +211,7 @@ push 	rdi
 mov 	rdi, qword [rsi + r10 * 8]
 call 	checkFileExtension
 pop 	rdi
-cmp 	eax, TRUE
+cmp 	rax, TRUE
 jne 	invalidReadFileName
 push 	rdi
 push 	rsi
@@ -229,7 +229,7 @@ mov 	rdi, qword [rsi + r10 * 8]			;checking file argv[3] "newFile.bmp" etc
 call 	checkFileExtension
 pop 	rsi
 pop 	rdi
-cmp 	eax, TRUE
+cmp 	rax, TRUE
 jne 	invalidWriteFileName
 push 	rdi
 push 	rsi
@@ -342,6 +342,7 @@ global processHeaders
 processHeaders:
 
 push 	rbx
+push 	r9
 push 	r10
 push 	r11
 push 	r12
@@ -350,22 +351,18 @@ push 	r14
 push 	r15
 
 mov 	rbx, rdi		;read file descriptor
-mov 	r10, 0
+mov 	r9, rsi			;write file descriptor
+mov 	r10, 0			;counter
 mov 	r12, rcx		;image width
 mov 	r13, r8			;image height
 mov 	r15, rdx		;file size
-push 	rdi
-push 	rsi
-push 	rdx
+
 mov 	rax, SYS_read
 mov 	rdi, rbx
 mov 	rsi, header
 mov 	rdx, HEADER_SIZE
 syscall
-pop 	rdx
-pop 	rsi
-pop 	rdi
-cmp 	eax, 0
+cmp 	rax, 0
 jb 		errorOnRead
 
 ;Validate BM
@@ -410,18 +407,13 @@ cmp 	dword [r15], eax			;file size == image size + header size
 jne 	invalidBitmapSize
 
 ;Write to output file
-mov 	r12, rsi					;storing file descriptor
-push 	rsi
-push 	rdx
 mov 	rax, SYS_write
-mov 	rdi, r12
+mov 	rdi, r9
 mov 	rsi, header
 mov 	rdx, HEADER_SIZE
 syscall
-pop 	rdx
-cmp 	eax, 0
+cmp 	rax, 0
 jb 		errorToWrite
-mov 	qword [r12], rax			;storing write file descriptor
 
 mov 	eax, TRUE
 jmp 	done1
@@ -469,6 +461,7 @@ pop 	r13
 pop 	r12
 pop 	r11
 pop 	r10
+pop 	r9
 pop 	rbx
 
 ret
@@ -505,21 +498,40 @@ getRow:
 
 push 	rbx
 push 	r10
+push 	r11
 push 	r15
 
 mov 	rbx, rdi			;file descriptor
-mov 	r10, rsi			;image width
+mov 	rax, rsi			;image width
 mov 	r15, rdx			;row buffer
+mov 	r10, 3
+mul 	r10
+mov 	r10, rax			;picWidth * 3
 
-mov 	rax, SYS_read		;read starting image
-mov 	rdi, rbx	
-mov 	rsi, r15
+cmp 	byte [wasEOF], TRUE
+je 		endOfFile
+
+mov 	rax, SYS_read
+mov 	rdi, rbx
+mov 	rsi, localBuffer
 mov 	rdx, BUFF_SIZE
 syscall
 cmp 	rax, 0
 jb 		readError
+mov 	r11, qword [pixelCount]
+moveBuffer:
+mov 	al, byte [localBuffer + r11]
+cmp 	al, LF							;checking if localBuffer[i] = LF
+je 		endOfFile
+mov 	byte [r15], al					;placing localBuffer[i] into rowBuffer[i]
+inc 	r11
+cmp 	r11, r10						;counter < picWidth
+jb 		moveBuffer
+mov		qword [pixelCount], r11
 
-mov 	eax, TRUE
+endOfFile:
+mov 	eax, FALSE						;return false
+mov 	byte [wasEOF], TRUE				;set EOF true
 jmp 	done2
 
 readError:
@@ -530,6 +542,7 @@ jmp 	done2
 
 done2:
 pop 	r15
+pop 	r11
 pop 	r10
 pop 	rbx
 
@@ -591,7 +604,10 @@ push 	r13
 push 	r14
 push 	r15
 
-mov 	rbx, rdi		;width
+mov 	rax, rdi		;width
+mov 	r10, 3
+mul 	r10
+mov 	rbx, rax		;picWidth * 3
 mov 	r10, rsi		;row buffer
 mov 	r12, 0			;counter
 mov 	r13, 0			;store bytes from buffer
@@ -606,7 +622,7 @@ inc 	r15			;counts the 3 bytes of rgb
 inc 	r12
 cmp 	r15, 3
 je 		cvtColor
-cmp 	r12, r10	;checking if we've gone through all pixels
+cmp 	r12, rbx	;checking if we've gone through all pixels
 jb 		cvtToBw
 
 cvtColor:
