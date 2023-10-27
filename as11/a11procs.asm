@@ -509,18 +509,13 @@ push 	r11
 push 	r14
 push 	r15
 
-mov 	rbx, rdi			;file descriptor
-mov 	rax, rsi			;image width
-mov 	r15, rdx			;row buffer
+mov 	rbx, rdi					;file descriptor
+mov 	rax, rsi					;image width
+mov 	r15, rdx					;row buffer
 mov 	r10, 3
 mul 	r10
-mov 	r10, rax			;picWidth * 3
+mov 	r10, rax					;picWidth * 3
 mov 	r14, qword [buffMax]
-
-cmp 	byte [wasEOF], TRUE
-je 		doNotRead
-cmp 	qword [curr], r14				;if curr < amountRead
-jb 		getNextChr
 
 readFromFile:
 mov 	rax, SYS_read
@@ -528,38 +523,35 @@ mov 	rdi, rbx
 mov 	rsi, localBuffer
 mov 	rdx, BUFF_SIZE
 syscall
+
 cmp 	rax, 0
 jl 		readError
-cmp 	rax, r10
-jl 		endOfFile
-mov 	qword [buffMax], rax			;this is the amount read
-mov 	qword [curr], 0					;setting curr to 0
-getNextChr:
+
+cmp 	rax, 0
+je 		endOfFile
+
+mov 	qword [buffMax], rax
+mov 	qword [curr], 0
 mov 	r11, qword [curr]
-mov 	r14, 0							;counter for rowBuffer
-mov 	rax, 0							;reset rax
-moveToRow:
-mov 	al, byte [localBuffer + r11]	;chr = localBuffer[i]
-mov 	byte [r15 + r14], al			;rowBuffer[i] = chr
+mov 	r14, 0
+moveRow:
+mov 	al, byte [localBuffer + r11]
+mov 	byte [r15 + r14], al
 inc 	r11
 inc 	r14
-mov 	qword [curr], r11				;curr < picWidth * 3 then increment curr
+mov 	qword [curr], r11
 cmp 	r11, qword [buffMax]
-je 		readFromFile
+jae 	readFromFile
 cmp 	r14, r10
-jb 		moveToRow
+jb 		moveRow
 
 mov 	eax, TRUE
 jmp 	done2
 
 endOfFile:
-mov 	qword [buffMax], rax
-mov 	eax, FALSE						;return false
-mov 	byte [wasEOF], TRUE				;set EOF true
-jmp 	done2
-
-doNotRead:
+mov 	byte [wasEOF], TRUE
 mov 	eax, FALSE
+mov 	qword [buffMax], 0
 jmp 	done2
 
 readError:
@@ -618,10 +610,6 @@ mul 	r11
 pop 	rdx
 mov 	r11, rax			;picWidth*3
 
-cmp 	byte [wasEOF], TRUE
-jne 	writeToFile
-mov 	r11, qword [buffMax]
-writeToFile:
 mov 	rax, SYS_write
 mov 	rdi, r10
 mov 	rsi, rbx
