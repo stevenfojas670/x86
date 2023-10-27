@@ -287,14 +287,14 @@
    287 00000078 49C7C300000000         mov r11, 0
    288 0000007F 57                     push rdi
    289 00000080 4A8B3CD6               mov rdi, qword [rsi + r10 * 8]
-   290 00000084 E8AD040000             call checkFileExtension
+   290 00000084 E803050000             call checkFileExtension
    291 00000089 5F                     pop rdi
    292 0000008A 4883F801               cmp rax, TRUE
    293 0000008E 7575                   jne invalidReadFileName
    294 00000090 57                     push rdi
    295 00000091 56                     push rsi
    296 00000092 4A8B3CD6               mov rdi, qword [rsi + r10 * 8]
-   297 00000096 E8E7040000             call openFile
+   297 00000096 E83D050000             call openFile
    298 0000009B 5E                     pop rsi
    299 0000009C 5F                     pop rdi
    300 0000009D 4883F800               cmp rax, 0
@@ -304,7 +304,7 @@
    304 000000AA 57                     push rdi
    305 000000AB 56                     push rsi
    306 000000AC 4A8B3CD6               mov rdi, qword [rsi + r10 * 8]
-   307 000000B0 E881040000             call checkFileExtension
+   307 000000B0 E8D7040000             call checkFileExtension
    308 000000B5 5E                     pop rsi
    309 000000B6 5F                     pop rdi
    310 000000B7 4883F801               cmp rax, TRUE
@@ -312,7 +312,7 @@
    312 000000BD 57                     push rdi
    313 000000BE 56                     push rsi
    314 000000BF 4A8B3CD6               mov rdi, qword [rsi + r10 * 8]
-   315 000000C3 E8D5040000             call createFile
+   315 000000C3 E82B050000             call createFile
    316 000000C8 5E                     pop rsi
    317 000000C9 5F                     pop rdi
    318 000000CA 4883F800               cmp rax, 0
@@ -324,49 +324,49 @@
    324 000000D9 E996000000             jmp done
    325                                 createFileError:
    326 000000DE 48C7C7[00000000]       mov rdi, errWriteFile
-   327 000000E5 E819040000             call printString
+   327 000000E5 E86F040000             call printString
    328 000000EA B800000000             mov eax, FALSE
    329 000000EF E980000000             jmp done
    330                                 
    331                                 invalidWriteFileName:
    332 000000F4 48C7C7[00000000]       mov rdi, errWriteName
-   333 000000FB E803040000             call printString
+   333 000000FB E859040000             call printString
    334 00000100 B800000000             mov eax, FALSE
    335 00000105 EB70                   jmp done
    336                                 
    337                                 invalidReadFileName:
    338 00000107 48C7C7[00000000]       mov rdi, errReadName
-   339 0000010E E8F0030000             call printString
+   339 0000010E E846040000             call printString
    340 00000113 B800000000             mov eax, FALSE
    341 00000118 EB5D                   jmp done
    342                                 
    343                                 openFileError:
    344 0000011A 48C7C7[00000000]       mov rdi, errReadFile
-   345 00000121 E8DD030000             call printString
+   345 00000121 E833040000             call printString
    346 00000126 B800000000             mov eax, FALSE
    347 0000012B EB4A                   jmp done
    348                                 
    349                                 imInvalid:
    350 0000012D 48C7C7[00000000]       mov rdi, errOption
-   351 00000134 E8CA030000             call printString
+   351 00000134 E820040000             call printString
    352 00000139 B800000000             mov eax, FALSE
    353 0000013E EB37                   jmp done
    354                                 
    355                                 incorrectUsage:
    356 00000140 48C7C7[00000000]       mov rdi, usageMsg
-   357 00000147 E8B7030000             call printString
+   357 00000147 E80D040000             call printString
    358 0000014C B800000000             mov eax, FALSE
    359 00000151 EB24                   jmp done
    360                                 
    361                                 tooFewArgs:
    362 00000153 48C7C7[00000000]       mov rdi, errIncomplete
-   363 0000015A E8A4030000             call printString
+   363 0000015A E8FA030000             call printString
    364 0000015F B800000000             mov eax, FALSE
    365 00000164 EB11                   jmp done
    366                                 
    367                                 tooManyArgs:
    368 00000166 48C7C7[00000000]       mov rdi, errExtra
-   369 0000016D E891030000             call printString
+   369 0000016D E8E7030000             call printString
    370 00000172 B800000000             mov eax, FALSE
    371 00000177 EBFE                   jmp done
    372                                 
@@ -441,118 +441,118 @@
    441 000001BB 48C7C236000000         mov rdx, HEADER_SIZE
    442 000001C2 0F05                   syscall
    443 000001C4 4883F800               cmp rax, 0
-   444 000001C8 0F8C4D010000           jl errorOnRead
+   444 000001C8 0F8C57010000           jl errorOnRead
    445                                 
-   446                                 
-   447 000001CE 418A82[00000000]       mov al, byte [header + r10]
-   448 000001D5 3C42                   cmp al, 66
-   449 000001D7 0F852B010000           jne fileTypeError
-   450 000001DD 49FFC2                 inc r10
-   451 000001E0 418A82[00000000]       mov al, byte [header + r10]
-   452 000001E7 3C4D                   cmp al, 77
-   453 000001E9 0F8519010000           jne fileTypeError
-   454 000001EF 49FFC2                 inc r10
-   455 000001F2 418B82[00000000]       mov eax, dword [header + r10]
-   456 000001F9 418907                 mov dword [r15], eax
-   457 000001FC 4983C208               add r10, 8
-   458 00000200 418B82[00000000]       mov eax, dword [header + r10]
-   459 00000207 83F836                 cmp eax, 54
-   460 0000020A 0F85BF000000           jne invalidBitmapSize
-   461 00000210 4189C6                 mov r14d, eax
-   462 00000213 4983C204               add r10, 4
-   463 00000217 418B82[00000000]       mov eax, dword [header + r10]
-   464 0000021E 4983C204               add r10, 4
-   465 00000222 418B82[00000000]       mov eax, dword [header + r10]
-   466 00000229 41890424               mov dword [r12], eax
-   467 0000022D 50                     push rax
-   468 0000022E 4152                   push r10
-   469 00000230 41BA03000000           mov r10d, 3
-   470 00000236 41F7E2                 mul r10d
-   471 00000239 4C891425[00000000]     mov qword [pixelCount], r10
-   472 00000241 415A                   pop r10
-   473 00000243 58                     pop rax
-   474 00000244 4983C204               add r10, 4
-   475 00000248 418B82[00000000]       mov eax, dword [header + r10]
-   476 0000024F 41894500               mov dword [r13], eax
-   477 00000253 4983C204               add r10, 4
-   478 00000257 66418B82[00000000]     mov ax, word [header + r10]
-   479 0000025F 4983C202               add r10, 2
-   480 00000263 66418B82[00000000]     mov ax, word [header + r10]
-   481 0000026B 6683F818               cmp ax, 24
-   482 0000026F 0F8580000000           jne depthError
-   483 00000275 4983C202               add r10, 2
-   484 00000279 418B82[00000000]       mov eax, dword [header + r10]
-   485 00000280 83F800                 cmp eax, 0
-   486 00000283 7561                   jne compTypeError
-   487 00000285 4983C204               add r10, 4
-   488 00000289 418B82[00000000]       mov eax, dword [header + r10]
-   489 00000290 4401F0                 add eax, r14d
-   490 00000293 458B1F                 mov r11d, dword [r15]
-   491 00000296 413907                 cmp dword [r15], eax
-   492 00000299 7538                   jne invalidBitmapSize
-   493                                 
-   494                                 
-   495 0000029B 48C7C001000000         mov rax, SYS_write
-   496 000002A2 4C89CF                 mov rdi, r9
-   497 000002A5 48C7C6[00000000]       mov rsi, header
-   498 000002AC 48C7C236000000         mov rdx, HEADER_SIZE
-   499 000002B3 0F05                   syscall
-   500 000002B5 4883F800               cmp rax, 0
-   501 000002B9 7C05                   jl errorToWrite
-   502                                 
-   503 000002BB B801000000             mov eax, TRUE
-   504 000002C0 EB70                   jmp done1
+   446 000001CE 4883F836               cmp rax, 54
+   447 000001D2 0F85(F4FFFFFF)         jne errSize
+   448                                 
+   449                                 
+   450 000001D8 418A82[00000000]       mov al, byte [header + r10]
+   451 000001DF 3C42                   cmp al, 66
+   452 000001E1 0F852B010000           jne fileTypeError
+   453 000001E7 49FFC2                 inc r10
+   454 000001EA 418A82[00000000]       mov al, byte [header + r10]
+   455 000001F1 3C4D                   cmp al, 77
+   456 000001F3 0F8519010000           jne fileTypeError
+   457 000001F9 49FFC2                 inc r10
+   458 000001FC 418B82[00000000]       mov eax, dword [header + r10]
+   459 00000203 418907                 mov dword [r15], eax
+   460 00000206 4983C208               add r10, 8
+   461 0000020A 418B82[00000000]       mov eax, dword [header + r10]
+   462 00000211 83F836                 cmp eax, 54
+   463 00000214 0F85BF000000           jne invalidBitmapSize
+   464 0000021A 4189C6                 mov r14d, eax
+   465 0000021D 4983C204               add r10, 4
+   466 00000221 418B82[00000000]       mov eax, dword [header + r10]
+   467 00000228 4983C204               add r10, 4
+   468 0000022C 418B82[00000000]       mov eax, dword [header + r10]
+   469 00000233 41890424               mov dword [r12], eax
+   470 00000237 50                     push rax
+   471 00000238 4152                   push r10
+   472 0000023A 41BA03000000           mov r10d, 3
+   473 00000240 41F7E2                 mul r10d
+   474 00000243 4C891425[00000000]     mov qword [pixelCount], r10
+   475 0000024B 415A                   pop r10
+   476 0000024D 58                     pop rax
+   477 0000024E 4983C204               add r10, 4
+   478 00000252 418B82[00000000]       mov eax, dword [header + r10]
+   479 00000259 41894500               mov dword [r13], eax
+   480 0000025D 4983C204               add r10, 4
+   481 00000261 66418B82[00000000]     mov ax, word [header + r10]
+   482 00000269 4983C202               add r10, 2
+   483 0000026D 66418B82[00000000]     mov ax, word [header + r10]
+   484 00000275 6683F818               cmp ax, 24
+   485 00000279 0F8580000000           jne depthError
+   486 0000027F 4983C202               add r10, 2
+   487 00000283 418B82[00000000]       mov eax, dword [header + r10]
+   488 0000028A 83F800                 cmp eax, 0
+   489 0000028D 7561                   jne compTypeError
+   490 0000028F 4983C204               add r10, 4
+   491 00000293 418B82[00000000]       mov eax, dword [header + r10]
+   492 0000029A 4401F0                 add eax, r14d
+   493 0000029D 458B1F                 mov r11d, dword [r15]
+   494 000002A0 413907                 cmp dword [r15], eax
+   495 000002A3 7538                   jne invalidBitmapSize
+   496                                 
+   497                                 
+   498 000002A5 48C7C001000000         mov rax, SYS_write
+   499 000002AC 4C89CF                 mov rdi, r9
+   500 000002AF 48C7C6[00000000]       mov rsi, header
+   501 000002B6 48C7C236000000         mov rdx, HEADER_SIZE
+   502 000002BD 0F05                   syscall
+   503 000002BF 4883F800               cmp rax, 0
+   504 000002C3 7C05                   jl errorToWrite
    505                                 
-   506                                 errorToWrite:
-   507 000002C2 48C7C7[00000000]       mov rdi, errWriteFile
-   508 000002C9 E835020000             call printString
-   509 000002CE B800000000             mov eax, FALSE
-   510 000002D3 EB5D                   jmp done1
-   511                                 
-   512                                 invalidBitmapSize:
-   513 000002D5 48C7C7[00000000]       mov rdi, errSize
-   514 000002DC E822020000             call printString
-   515 000002E1 B800000000             mov eax, FALSE
-   516 000002E6 EB4A                   jmp done1
-   517                                 
-   518                                 compTypeError:
-   519 000002E8 48C7C7[00000000]       mov rdi, errCompType
-   520 000002EF E80F020000             call printString
-   521 000002F4 B800000000             mov eax, FALSE
-   522 000002F9 EB37                   jmp done1
-   523                                 
-   524                                 depthError:
-   525 000002FB 48C7C7[00000000]       mov rdi, errDepth
-   526 00000302 E8FC010000             call printString
-   527 00000307 B800000000             mov eax, FALSE
-   528 0000030C EB24                   jmp done1
-   529                                 
-   530                                 fileTypeError:
-   531 0000030E 48C7C7[00000000]       mov rdi, errFileType
-   532 00000315 E8E9010000             call printString
-   533 0000031A B800000000             mov eax, FALSE
-   534 0000031F EB11                   jmp done1
-   535                                 
-   536                                 errorOnRead:
-   537 00000321 48C7C7[00000000]       mov rdi, errReadHdr
-   538 00000328 E8D6010000             call printString
-   539 0000032D B800000000             mov eax, FALSE
-   540 00000332 EBFE                   jmp done1
-   541                                 
-   542                                 done1:
-   543 00000334 415F                   pop r15
-   544 00000336 415E                   pop r14
-   545 00000338 415D                   pop r13
-   546 0000033A 415C                   pop r12
-   547 0000033C 415B                   pop r11
-   548 0000033E 415A                   pop r10
-   549 00000340 4159                   pop r9
-   550 00000342 5B                     pop rbx
-   551                                 
-   552 00000343 C3                     ret
-   553                                 
+   506 000002C5 B801000000             mov eax, TRUE
+   507 000002CA EB70                   jmp done1
+   508                                 
+   509                                 errorToWrite:
+   510 000002CC 48C7C7[00000000]       mov rdi, errWriteFile
+   511 000002D3 E881020000             call printString
+   512 000002D8 B800000000             mov eax, FALSE
+   513 000002DD EB5D                   jmp done1
+   514                                 
+   515                                 invalidBitmapSize:
+   516 000002DF 48C7C7[00000000]       mov rdi, errSize
+   517 000002E6 E86E020000             call printString
+   518 000002EB B800000000             mov eax, FALSE
+   519 000002F0 EB4A                   jmp done1
+   520                                 
+   521                                 compTypeError:
+   522 000002F2 48C7C7[00000000]       mov rdi, errCompType
+   523 000002F9 E85B020000             call printString
+   524 000002FE B800000000             mov eax, FALSE
+   525 00000303 EB37                   jmp done1
+   526                                 
+   527                                 depthError:
+   528 00000305 48C7C7[00000000]       mov rdi, errDepth
+   529 0000030C E848020000             call printString
+   530 00000311 B800000000             mov eax, FALSE
+   531 00000316 EB24                   jmp done1
+   532                                 
+   533                                 fileTypeError:
+   534 00000318 48C7C7[00000000]       mov rdi, errFileType
+   535 0000031F E835020000             call printString
+   536 00000324 B800000000             mov eax, FALSE
+   537 00000329 EB11                   jmp done1
+   538                                 
+   539                                 errorOnRead:
+   540 0000032B 48C7C7[00000000]       mov rdi, errReadHdr
+   541 00000332 E822020000             call printString
+   542 00000337 B800000000             mov eax, FALSE
+   543 0000033C EBFE                   jmp done1
+   544                                 
+   545                                 done1:
+   546 0000033E 415F                   pop r15
+   547 00000340 415E                   pop r14
+   548 00000342 415D                   pop r13
+   549 00000344 415C                   pop r12
+   550 00000346 415B                   pop r11
+   551 00000348 415A                   pop r10
+   552 0000034A 4159                   pop r9
+   553 0000034C 5B                     pop rbx
    554                                 
-   555                                 
+   555 0000034D C3                     ret
    556                                 
    557                                 
    558                                 
@@ -578,238 +578,238 @@
    578                                 
    579                                 
    580                                 
-   581                                 [global getRow]
-   582                                 getRow:
+   581                                 
+   582                                 
    583                                 
-   584 00000344 53                     push rbx
-   585 00000345 4152                   push r10
-   586 00000347 4153                   push r11
-   587 00000349 4156                   push r14
-   588 0000034B 4157                   push r15
-   589                                 
-   590 0000034D 4889FB                 mov rbx, rdi
-   591 00000350 4889F0                 mov rax, rsi
-   592 00000353 4989D7                 mov r15, rdx
-   593 00000356 49C7C203000000         mov r10, 3
-   594 0000035D 49F7E2                 mul r10
-   595 00000360 4989C2                 mov r10, rax
-   596 00000363 4C8B3425[00000000]     mov r14, qword [buffMax]
-   597                                 
-   598                                 readFromFile:
-   599 0000036B 48C7C000000000         mov rax, SYS_read
-   600 00000372 4889DF                 mov rdi, rbx
-   601 00000375 48C7C6[00000000]       mov rsi, localBuffer
-   602 0000037C 48C7C240420F00         mov rdx, BUFF_SIZE
-   603 00000383 0F05                   syscall
-   604                                 
-   605 00000385 4883F800               cmp rax, 0
-   606 00000389 7C71                   jl readError
-   607                                 
-   608 0000038B 4883F800               cmp rax, 0
-   609 0000038F 7450                   je endOfFile
+   584                                 [global getRow]
+   585                                 getRow:
+   586                                 
+   587 0000034E 53                     push rbx
+   588 0000034F 4152                   push r10
+   589 00000351 4153                   push r11
+   590 00000353 4156                   push r14
+   591 00000355 4157                   push r15
+   592                                 
+   593 00000357 4889FB                 mov rbx, rdi
+   594 0000035A 4889F0                 mov rax, rsi
+   595 0000035D 4989D7                 mov r15, rdx
+   596 00000360 49C7C203000000         mov r10, 3
+   597 00000367 49F7E2                 mul r10
+   598 0000036A 4989C2                 mov r10, rax
+   599 0000036D 4C8B3425[00000000]     mov r14, qword [buffMax]
+   600                                 
+   601 00000375 4C393425[00000000]     cmp qword [curr], r14
+   602 0000037D 7300                   jae fillBuffer
+   603 0000037F EB40                   jmp getChar
+   604                                 fillBuffer:
+   605 00000381 48C7C000000000         mov rax, SYS_read
+   606 00000388 4889DF                 mov rdi, rbx
+   607 0000038B 48C7C6[00000000]       mov rsi, localBuffer
+   608 00000392 48C7C240420F00         mov rdx, BUFF_SIZE
+   609 00000399 0F05                   syscall
    610                                 
-   611 00000391 48890425[00000000]     mov qword [buffMax], rax
-   612 00000399 48C70425[00000000]-    mov qword [curr], 0
-   613 00000399 00000000           
-   614 000003A5 4C8B1C25[00000000]     mov r11, qword [curr]
-   615 000003AD 49C7C600000000         mov r14, 0
-   616                                 moveRow:
-   617 000003B4 418A83[00000000]       mov al, byte [localBuffer + r11]
-   618 000003BB 43880437               mov byte [r15 + r14], al
-   619 000003BF 49FFC3                 inc r11
-   620 000003C2 49FFC6                 inc r14
-   621 000003C5 4C891C25[00000000]     mov qword [curr], r11
-   622 000003CD 4C3B1C25[00000000]     cmp r11, qword [buffMax]
-   623 000003D5 7392                   jae readFromFile
-   624 000003D7 4D39D6                 cmp r14, r10
-   625 000003DA 72D6                   jb moveRow
-   626                                 
-   627 000003DC B801000000             mov eax, TRUE
-   628 000003E1 EB2C                   jmp done2
-   629                                 
-   630                                 endOfFile:
-   631 000003E3 C60425[00000000]01     mov byte [wasEOF], TRUE
-   632 000003EB B800000000             mov eax, FALSE
-   633 000003F0 48C70425[00000000]-    mov qword [buffMax], 0
-   634 000003F0 00000000           
-   635 000003FC EB11                   jmp done2
+   611 0000039B 4883F800               cmp rax, 0
+   612 0000039F 0F8CA9000000           jl readError
+   613                                 
+   614 000003A5 4883F800               cmp rax, 0
+   615 000003A9 0F8490000000           je endOfFile
+   616                                 
+   617 000003AF 48890425[00000000]     mov qword [buffMax], rax
+   618 000003B7 48C70425[00000000]-    mov qword [curr], 0
+   619 000003B7 00000000           
+   620                                 getChar:
+   621 000003C3 4C8B1C25[00000000]     mov r11, qword [curr]
+   622 000003CB 49C7C600000000         mov r14, 0
+   623                                 moveRow:
+   624 000003D2 418A83[00000000]       mov al, byte [localBuffer + r11]
+   625 000003D9 43880437               mov byte [r15 + r14], al
+   626 000003DD 49FFC3                 inc r11
+   627 000003E0 4C891C25[00000000]     mov qword [curr], r11
+   628 000003E8 4C3B1C25[00000000]     cmp r11, qword [buffMax]
+   629 000003F0 770D                   ja readFromFile
+   630 000003F2 49FFC6                 inc r14
+   631 000003F5 4D39D6                 cmp r14, r10
+   632 000003F8 72D6                   jb moveRow
+   633                                 
+   634 000003FA B801000000             mov eax, TRUE
+   635 000003FF EB64                   jmp done2
    636                                 
-   637                                 readError:
-   638 000003FE 48C7C7[00000000]       mov rdi, errReadFile
-   639 00000405 E8F9000000             call printString
-   640 0000040A B800000000             mov eax, FALSE
-   641 0000040F EBFE                   jmp done2
-   642                                 
-   643                                 done2:
-   644 00000411 415F                   pop r15
-   645 00000413 415E                   pop r14
-   646 00000415 415B                   pop r11
-   647 00000417 415A                   pop r10
-   648 00000419 5B                     pop rbx
+   637                                 readFromFile:
+   638 00000401 48C7C000000000         mov rax, SYS_read
+   639 00000408 4889DF                 mov rdi, rbx
+   640 0000040B 48C7C6[00000000]       mov rsi, localBuffer
+   641 00000412 48C7C240420F00         mov rdx, BUFF_SIZE
+   642 00000419 0F05                   syscall
+   643                                 
+   644 0000041B 4883F800               cmp rax, 0
+   645 0000041F 7C31                   jl readError
+   646                                 
+   647 00000421 4883F800               cmp rax, 0
+   648 00000425 741C                   je endOfFile
    649                                 
-   650 0000041A C3                     ret
-   651                                 
-   652                                 
-   653                                 
+   650 00000427 48890425[00000000]     mov qword [buffMax], rax
+   651 0000042F 48C70425[00000000]-    mov qword [curr], 0
+   652 0000042F 00000000           
+   653 0000043B 4C8B1C25[00000000]     mov r11, qword [curr]
    654                                 
-   655                                 
+   655 00000443 EB8B                   jmp moveRow
    656                                 
-   657                                 
-   658                                 
-   659                                 
-   660                                 
+   657                                 endOfFile:
+   658 00000445 C60425[00000000]01     mov byte [wasEOF], TRUE
+   659 0000044D B800000000             mov eax, FALSE
+   660 00000452 EB11                   jmp done2
    661                                 
-   662                                 
-   663                                 
-   664                                 
-   665                                 
-   666                                 
+   662                                 readError:
+   663 00000454 48C7C7[00000000]       mov rdi, errReadFile
+   664 0000045B E8F9000000             call printString
+   665 00000460 B800000000             mov eax, FALSE
+   666 00000465 EBFE                   jmp done2
    667                                 
-   668                                 
-   669                                 
-   670                                 
-   671                                 
-   672                                 
-   673                                 
+   668                                 done2:
+   669 00000467 415F                   pop r15
+   670 00000469 415E                   pop r14
+   671 0000046B 415B                   pop r11
+   672 0000046D 415A                   pop r10
+   673 0000046F 5B                     pop rbx
    674                                 
-   675                                 
+   675 00000470 C3                     ret
    676                                 
-   677                                 [global writeRow]
-   678                                 writeRow:
+   677                                 
+   678                                 
    679                                 
-   680 0000041B 53                     push rbx
-   681 0000041C 4152                   push r10
-   682 0000041E 4153                   push r11
+   680                                 
+   681                                 
+   682                                 
    683                                 
-   684 00000420 4889D3                 mov rbx, rdx
-   685 00000423 4989FA                 mov r10, rdi
-   686 00000426 4889F0                 mov rax, rsi
-   687 00000429 49C7C303000000         mov r11, 3
-   688 00000430 52                     push rdx
-   689 00000431 49F7E3                 mul r11
-   690 00000434 5A                     pop rdx
-   691 00000435 4989C3                 mov r11, rax
+   684                                 
+   685                                 
+   686                                 
+   687                                 
+   688                                 
+   689                                 
+   690                                 
+   691                                 
    692                                 
-   693 00000438 48C7C001000000         mov rax, SYS_write
-   694 0000043F 4C89D7                 mov rdi, r10
-   695 00000442 4889DE                 mov rsi, rbx
-   696 00000445 4C89DA                 mov rdx, r11
-   697 00000448 0F05                   syscall
-   698 0000044A 4883F800               cmp rax, 0
-   699 0000044E 7C05                   jl errorOnWrite
+   693                                 
+   694                                 
+   695                                 
+   696                                 
+   697                                 
+   698                                 
+   699                                 
    700                                 
-   701 00000450 B801000000             mov eax, TRUE
-   702 00000455 EB11                   jmp done3
-   703                                 
-   704                                 errorOnWrite:
-   705 00000457 48C7C7[00000000]       mov rdi, errWrite
-   706 0000045E E8A0000000             call printString
-   707 00000463 B800000000             mov eax, FALSE
-   708 00000468 EBFE                   jmp done3
-   709                                 
-   710                                 done3:
-   711 0000046A 415B                   pop r11
-   712 0000046C 415A                   pop r10
-   713 0000046E 5B                     pop rbx
-   714                                 
-   715 0000046F C3                     ret
-   716                                 
+   701                                 
+   702                                 [global writeRow]
+   703                                 writeRow:
+   704                                 
+   705 00000471 53                     push rbx
+   706 00000472 4152                   push r10
+   707 00000474 4153                   push r11
+   708                                 
+   709 00000476 4889D3                 mov rbx, rdx
+   710 00000479 4989FA                 mov r10, rdi
+   711 0000047C 4889F0                 mov rax, rsi
+   712 0000047F 49C7C303000000         mov r11, 3
+   713 00000486 52                     push rdx
+   714 00000487 49F7E3                 mul r11
+   715 0000048A 5A                     pop rdx
+   716 0000048B 4989C3                 mov r11, rax
    717                                 
-   718                                 
-   719                                 
-   720                                 
-   721                                 
-   722                                 
-   723                                 
-   724                                 
+   718 0000048E 48C7C001000000         mov rax, SYS_write
+   719 00000495 4C89D7                 mov rdi, r10
+   720 00000498 4889DE                 mov rsi, rbx
+   721 0000049B 4C89DA                 mov rdx, r11
+   722 0000049E 0F05                   syscall
+   723 000004A0 4883F800               cmp rax, 0
+   724 000004A4 7C05                   jl errorOnWrite
    725                                 
-   726                                 
-   727                                 
+   726 000004A6 B801000000             mov eax, TRUE
+   727 000004AB EB11                   jmp done3
    728                                 
-   729                                 
-   730                                 
-   731                                 
-   732                                 
-   733                                 [global imageCvtToBW]
-   734                                 imageCvtToBW:
-   735                                 
-   736 00000470 53                     push rbx
-   737 00000471 4152                   push r10
-   738 00000473 4154                   push r12
-   739 00000475 4155                   push r13
-   740 00000477 4156                   push r14
-   741 00000479 4157                   push r15
+   729                                 errorOnWrite:
+   730 000004AD 48C7C7[00000000]       mov rdi, errWrite
+   731 000004B4 E8A0000000             call printString
+   732 000004B9 B800000000             mov eax, FALSE
+   733 000004BE EBFE                   jmp done3
+   734                                 
+   735                                 done3:
+   736 000004C0 415B                   pop r11
+   737 000004C2 415A                   pop r10
+   738 000004C4 5B                     pop rbx
+   739                                 
+   740 000004C5 C3                     ret
+   741                                 
    742                                 
-   743 0000047B 4889F8                 mov rax, rdi
-   744 0000047E 49C7C203000000         mov r10, 3
-   745 00000485 49F7E2                 mul r10
-   746 00000488 4889C3                 mov rbx, rax
-   747 0000048B 4989F2                 mov r10, rsi
-   748 0000048E 49C7C400000000         mov r12, 0
-   749 00000495 49C7C500000000         mov r13, 0
-   750 0000049C 48C7C000000000         mov rax, 0
-   751 000004A3 49C7C700000000         mov r15, 0
-   752 000004AA 49C7C603000000         mov r14, 3
+   743                                 
+   744                                 
+   745                                 
+   746                                 
+   747                                 
+   748                                 
+   749                                 
+   750                                 
+   751                                 
+   752                                 
    753                                 
-   754                                 cvtToBw:
-   755 000004B1 478A2C22               mov r13b, byte [r10 + r12]
-   756 000004B5 4401E8                 add eax, r13d
-   757 000004B8 49FFC7                 inc r15
-   758 000004BB 49FFC4                 inc r12
-   759 000004BE 4983FF03               cmp r15, 3
-   760 000004C2 7403                   je cvtColor
-   761 000004C4 4939DC                 cmp r12, rbx
-   762 000004C7 72E6                   jb cvtToBw
-   763                                 
-   764                                 cvtColor:
-   765 000004C9 6641F7F6               div r14w
-   766 000004CD 4154                   push r12
-   767 000004CF 4983EC03               sub r12, 3
-   768 000004D3 43880422               mov byte [r10 + r12], al
-   769 000004D7 49FFC4                 inc r12
-   770 000004DA 43880422               mov byte [r10 + r12], al
-   771 000004DE 49FFC4                 inc r12
-   772 000004E1 43880422               mov byte [r10 + r12], al
-   773 000004E5 49C7C700000000         mov r15, 0
-   774 000004EC 48C7C000000000         mov rax, 0
-   775 000004F3 415C                   pop r12
-   776 000004F5 4939DC                 cmp r12, rbx
-   777 000004F8 72B5                   jb cvtToBw
+   754                                 
+   755                                 
+   756                                 
+   757                                 
+   758                                 [global imageCvtToBW]
+   759                                 imageCvtToBW:
+   760                                 
+   761 000004C6 53                     push rbx
+   762 000004C7 4152                   push r10
+   763 000004C9 4154                   push r12
+   764 000004CB 4155                   push r13
+   765 000004CD 4156                   push r14
+   766 000004CF 4157                   push r15
+   767                                 
+   768 000004D1 4889F8                 mov rax, rdi
+   769 000004D4 49C7C203000000         mov r10, 3
+   770 000004DB 49F7E2                 mul r10
+   771 000004DE 4889C3                 mov rbx, rax
+   772 000004E1 4989F2                 mov r10, rsi
+   773 000004E4 49C7C400000000         mov r12, 0
+   774 000004EB 49C7C500000000         mov r13, 0
+   775 000004F2 48C7C000000000         mov rax, 0
+   776 000004F9 49C7C700000000         mov r15, 0
+   777 00000500 49C7C603000000         mov r14, 3
    778                                 
-   779 000004FA 415F                   pop r15
-   780 000004FC 415E                   pop r14
-   781 000004FE 415D                   pop r13
-   782 00000500 415C                   pop r12
-   783 00000502 415A                   pop r10
-   784 00000504 5B                     pop rbx
-   785                                 
-   786                                 
-   787 00000505 C3                     ret
+   779                                 cvtToBw:
+   780 00000507 478A2C22               mov r13b, byte [r10 + r12]
+   781 0000050B 4401E8                 add eax, r13d
+   782 0000050E 49FFC7                 inc r15
+   783 00000511 49FFC4                 inc r12
+   784 00000514 4983FF03               cmp r15, 3
+   785 00000518 7403                   je cvtColor
+   786 0000051A 4939DC                 cmp r12, rbx
+   787 0000051D 72E6                   jb cvtToBw
    788                                 
-   789                                 
-   790                                 
-   791                                 
-   792                                 
-   793                                 
-   794                                 
-   795                                 
-   796                                 
-   797                                 
-   798                                 
-   799                                 
-   800                                 
-   801                                 
-   802                                 
+   789                                 cvtColor:
+   790 0000051F 6641F7F6               div r14w
+   791 00000523 4154                   push r12
+   792 00000525 4983EC03               sub r12, 3
+   793 00000529 43880422               mov byte [r10 + r12], al
+   794 0000052D 49FFC4                 inc r12
+   795 00000530 43880422               mov byte [r10 + r12], al
+   796 00000534 49FFC4                 inc r12
+   797 00000537 43880422               mov byte [r10 + r12], al
+   798 0000053B 49C7C700000000         mov r15, 0
+   799 00000542 48C7C000000000         mov rax, 0
+   800 00000549 415C                   pop r12
+   801 0000054B 4939DC                 cmp r12, rbx
+   802 0000054E 72B5                   jb cvtToBw
    803                                 
-   804                                 
-   805                                 [global imageBrighten]
-   806                                 imageBrighten:
-   807                                 
-   808 00000506 C3                     ret
-   809                                 
+   804 00000550 415F                   pop r15
+   805 00000552 415E                   pop r14
+   806 00000554 415D                   pop r13
+   807 00000556 415C                   pop r12
+   808 00000558 415A                   pop r10
+   809 0000055A 5B                     pop rbx
    810                                 
    811                                 
-   812                                 
+   812 0000055B C3                     ret
    813                                 
    814                                 
    815                                 
@@ -823,14 +823,14 @@
    823                                 
    824                                 
    825                                 
-   826                                 [global imageDarken]
-   827                                 imageDarken:
+   826                                 
+   827                                 
    828                                 
-   829 00000507 C3                     ret
-   830                                 
-   831                                 
+   829                                 
+   830                                 [global imageBrighten]
+   831                                 imageBrighten:
    832                                 
-   833                                 
+   833 0000055C C3                     ret
    834                                 
    835                                 
    836                                 
@@ -842,117 +842,142 @@
    842                                 
    843                                 
    844                                 
-   845                                 [global printString]
-   846                                 printString:
-   847 00000508 53                      push rbx
+   845                                 
+   846                                 
+   847                                 
    848                                 
    849                                 
    850                                 
-   851                                 
-   852 00000509 4889FB                  mov rbx, rdi
-   853 0000050C 48C7C200000000          mov rdx, 0
-   854                                 strCountLoop:
-   855 00000513 803B00                  cmp byte [rbx], NULL
-   856 00000516 7406                    je strCountDone
-   857 00000518 48FFC3                  inc rbx
-   858 0000051B 48FFC2                  inc rdx
-   859 0000051E EBF1                    jmp strCountLoop
-   860                                 strCountDone:
+   851                                 [global imageDarken]
+   852                                 imageDarken:
+   853                                 
+   854 0000055D C3                     ret
+   855                                 
+   856                                 
+   857                                 
+   858                                 
+   859                                 
+   860                                 
    861                                 
-   862 00000520 4883FA00                cmp rdx, 0
-   863 00000524 7411                    je prtDone
+   862                                 
+   863                                 
    864                                 
    865                                 
    866                                 
    867                                 
-   868 00000526 48C7C001000000          mov rax, SYS_write
-   869 0000052D 4889FE                  mov rsi, rdi
-   870 00000530 48C7C701000000          mov rdi, STDOUT
-   871                                 
-   872 00000537 0F05                    syscall
+   868                                 
+   869                                 
+   870                                 [global printString]
+   871                                 printString:
+   872 0000055E 53                      push rbx
    873                                 
    874                                 
    875                                 
    876                                 
-   877                                 prtDone:
-   878 00000539 5B                      pop rbx
-   879 0000053A C3                      ret
-   880                                 
-   881                                 
-   882                                 
-   883                                 
-   884                                 
-   885                                 
-   886                                 [global checkFileExtension]
-   887                                 checkFileExtension:
-   888                                 
-   889 0000053B 4152                   push r10
+   877 0000055F 4889FB                  mov rbx, rdi
+   878 00000562 48C7C200000000          mov rdx, 0
+   879                                 strCountLoop:
+   880 00000569 803B00                  cmp byte [rbx], NULL
+   881 0000056C 7406                    je strCountDone
+   882 0000056E 48FFC3                  inc rbx
+   883 00000571 48FFC2                  inc rdx
+   884 00000574 EBF1                    jmp strCountLoop
+   885                                 strCountDone:
+   886                                 
+   887 00000576 4883FA00                cmp rdx, 0
+   888 0000057A 7411                    je prtDone
+   889                                 
    890                                 
-   891 0000053D 49C7C200000000         mov r10, 0
-   892                                 searchExt:
-   893 00000544 428A0417               mov al, byte [rdi + r10]
-   894 00000548 49FFC2                 inc r10
-   895 0000054B 3C2E                   cmp al, 46
-   896 0000054D 75F3                   jne searchExt
-   897 0000054F 428A0417               mov al, byte [rdi + r10]
-   898 00000553 3C62                   cmp al, 98
-   899 00000555 7526                   jne invalidFileExtension
-   900 00000557 49FFC2                 inc r10
-   901 0000055A 428A0417               mov al, byte [rdi + r10]
-   902 0000055E 3C6D                   cmp al, 109
-   903 00000560 751B                   jne invalidFileExtension
-   904 00000562 49FFC2                 inc r10
-   905 00000565 428A0417               mov al, byte [rdi + r10]
-   906 00000569 3C70                   cmp al, 112
-   907 0000056B 7510                   jne invalidFileExtension
-   908 0000056D 49FFC2                 inc r10
-   909 00000570 428A0417               mov al, byte [rdi + r10]
-   910 00000574 3C00                   cmp al, NULL
-   911 00000576 7505                   jne invalidFileExtension
-   912                                 
-   913 00000578 B801000000             mov eax, TRUE
-   914 0000057D EB03                   jmp extensionReturn
+   891                                 
+   892                                 
+   893 0000057C 48C7C001000000          mov rax, SYS_write
+   894 00000583 4889FE                  mov rsi, rdi
+   895 00000586 48C7C701000000          mov rdi, STDOUT
+   896                                 
+   897 0000058D 0F05                    syscall
+   898                                 
+   899                                 
+   900                                 
+   901                                 
+   902                                 prtDone:
+   903 0000058F 5B                      pop rbx
+   904 00000590 C3                      ret
+   905                                 
+   906                                 
+   907                                 
+   908                                 
+   909                                 
+   910                                 
+   911                                 [global checkFileExtension]
+   912                                 checkFileExtension:
+   913                                 
+   914 00000591 4152                   push r10
    915                                 
-   916                                 invalidFileExtension:
-   917 0000057F B800000000             mov eax, FALSE
-   918                                 
-   919                                 extensionReturn:
-   920 00000584 415A                   pop r10
-   921                                 
-   922 00000586 C3                     ret
-   923                                 
-   924                                 
-   925                                 
-   926                                 [global openFile]
-   927                                 openFile:
-   928                                 
-   929 00000587 4152                   push r10
-   930                                 
-   931 00000589 4C8D17                 lea r10, qword [rdi]
-   932                                 
-   933 0000058C 48C7C002000000         mov rax, SYS_open
-   934 00000593 4C89D7                 mov rdi, r10
-   935 00000596 48C7C600000000         mov rsi, O_RDONLY
-   936 0000059D 0F05                   syscall
+   916 00000593 49C7C200000000         mov r10, 0
+   917                                 searchExt:
+   918 0000059A 428A0417               mov al, byte [rdi + r10]
+   919 0000059E 49FFC2                 inc r10
+   920 000005A1 3C2E                   cmp al, 46
+   921 000005A3 75F3                   jne searchExt
+   922 000005A5 428A0417               mov al, byte [rdi + r10]
+   923 000005A9 3C62                   cmp al, 98
+   924 000005AB 7526                   jne invalidFileExtension
+   925 000005AD 49FFC2                 inc r10
+   926 000005B0 428A0417               mov al, byte [rdi + r10]
+   927 000005B4 3C6D                   cmp al, 109
+   928 000005B6 751B                   jne invalidFileExtension
+   929 000005B8 49FFC2                 inc r10
+   930 000005BB 428A0417               mov al, byte [rdi + r10]
+   931 000005BF 3C70                   cmp al, 112
+   932 000005C1 7510                   jne invalidFileExtension
+   933 000005C3 49FFC2                 inc r10
+   934 000005C6 428A0417               mov al, byte [rdi + r10]
+   935 000005CA 3C00                   cmp al, NULL
+   936 000005CC 7505                   jne invalidFileExtension
    937                                 
-   938 0000059F 415A                   pop r10
-   939                                 
-   940 000005A1 C3                     ret
-   941                                 
-   942                                 
+   938 000005CE B801000000             mov eax, TRUE
+   939 000005D3 EB03                   jmp extensionReturn
+   940                                 
+   941                                 invalidFileExtension:
+   942 000005D5 B800000000             mov eax, FALSE
    943                                 
-   944                                 [global createFile]
-   945                                 createFile:
+   944                                 extensionReturn:
+   945 000005DA 415A                   pop r10
    946                                 
-   947 000005A2 4152                   push r10
+   947 000005DC C3                     ret
    948                                 
-   949 000005A4 4C8D17                 lea r10, qword [rdi]
+   949                                 
    950                                 
-   951 000005A7 48C7C055000000         mov rax, SYS_creat
-   952 000005AE 4C89D7                 mov rdi, r10
-   953 000005B1 48C7C680010000         mov rsi, S_IRUSR | S_IWUSR
-   954 000005B8 0F05                   syscall
+   951                                 [global openFile]
+   952                                 openFile:
+   953                                 
+   954 000005DD 4152                   push r10
    955                                 
-   956 000005BA 415A                   pop r10
+   956 000005DF 4C8D17                 lea r10, qword [rdi]
    957                                 
-   958 000005BC C3                     ret
+   958 000005E2 48C7C002000000         mov rax, SYS_open
+   959 000005E9 4C89D7                 mov rdi, r10
+   960 000005EC 48C7C600000000         mov rsi, O_RDONLY
+   961 000005F3 0F05                   syscall
+   962                                 
+   963 000005F5 415A                   pop r10
+   964                                 
+   965 000005F7 C3                     ret
+   966                                 
+   967                                 
+   968                                 
+   969                                 [global createFile]
+   970                                 createFile:
+   971                                 
+   972 000005F8 4152                   push r10
+   973                                 
+   974 000005FA 4C8D17                 lea r10, qword [rdi]
+   975                                 
+   976 000005FD 48C7C055000000         mov rax, SYS_creat
+   977 00000604 4C89D7                 mov rdi, r10
+   978 00000607 48C7C680010000         mov rsi, S_IRUSR | S_IWUSR
+   979 0000060E 0F05                   syscall
+   980                                 
+   981 00000610 415A                   pop r10
+   982                                 
+   983 00000612 C3                     ret

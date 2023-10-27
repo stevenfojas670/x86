@@ -365,6 +365,9 @@ syscall
 cmp 	rax, 0
 jl		errorOnRead
 
+cmp 	rax, 54
+jne 	errSize
+
 ;Validate BM
 mov 	al, byte [header + r10]
 cmp 	al, 66
@@ -517,6 +520,41 @@ mul 	r10
 mov 	r10, rax					;picWidth * 3
 mov 	r14, qword [buffMax]
 
+cmp 	qword [curr], r14
+jae	 	fillBuffer
+jmp 	getChar
+fillBuffer:
+mov 	rax, SYS_read
+mov 	rdi, rbx
+mov 	rsi, localBuffer
+mov 	rdx, BUFF_SIZE
+syscall
+
+cmp 	rax, 0
+jl 		readError
+
+cmp 	rax, 0
+je 		endOfFile
+
+mov 	qword [buffMax], rax
+mov 	qword [curr], 0
+getChar:
+mov 	r11, qword [curr]
+mov 	r14, 0
+moveRow:
+mov 	al, byte [localBuffer + r11]
+mov 	byte [r15 + r14], al
+inc 	r11
+mov 	qword [curr], r11
+cmp 	r11, qword [buffMax]
+ja	 	readFromFile
+inc 	r14
+cmp 	r14, r10
+jb 		moveRow
+
+mov 	eax, TRUE
+jmp 	done2
+
 readFromFile:
 mov 	rax, SYS_read
 mov 	rdi, rbx
@@ -533,25 +571,12 @@ je 		endOfFile
 mov 	qword [buffMax], rax
 mov 	qword [curr], 0
 mov 	r11, qword [curr]
-mov 	r14, 0
-moveRow:
-mov 	al, byte [localBuffer + r11]
-mov 	byte [r15 + r14], al
-inc 	r11
-inc 	r14
-mov 	qword [curr], r11
-cmp 	r11, qword [buffMax]
-jae 	readFromFile
-cmp 	r14, r10
-jb 		moveRow
 
-mov 	eax, TRUE
-jmp 	done2
+jmp 	moveRow
 
 endOfFile:
 mov 	byte [wasEOF], TRUE
 mov 	eax, FALSE
-mov 	qword [buffMax], 0
 jmp 	done2
 
 readError:
