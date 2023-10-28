@@ -384,7 +384,7 @@ mov 	eax, dword [header + r10]	;file size
 mov 	dword [r15], eax			;storing file size
 add 	r10, 8						
 mov 	eax, dword [header + r10]	;Size of header
-mov 	r14d, eax					;storing header size for addition
+mov 	r14d, eax					;storing header size for comparison
 add 	r10, 4						
 mov 	eax, dword [header + r10]	;offset to start of image data in bytes
 add 	r10, 4						
