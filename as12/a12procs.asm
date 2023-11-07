@@ -3,7 +3,7 @@
 ;  NSHE_ID: 2001342715
 ;  Section: 
 ;  Assignment: 12
-;  Description: 
+;  Description: Utilizing spinlocks to learn how to use threads
 
 ; -----
 ;  Example Smith Number Count for 1 to 200: 8
@@ -131,6 +131,9 @@ je 		usageErr
 
 cmp 	rdi, 5
 jb 		clERR
+
+cmp 	rdi, 5
+ja 		clERR
 	
 mov 	r12, 1			;argv index
 mov 	r13, 0			;argv string counter
