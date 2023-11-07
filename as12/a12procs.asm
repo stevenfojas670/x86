@@ -129,11 +129,8 @@ push 	r15
 cmp 	rdi, 1
 je 		usageErr
 
-cmp 	rdi, 1
-jb 		clERR
-
 cmp 	rdi, 5
-ja 		clERR
+jb 		clERR
 	
 mov 	r12, 1			;argv index
 mov 	r13, 0			;argv string counter
