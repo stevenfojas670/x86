@@ -384,18 +384,28 @@ findSmithNumberCount:
 ; myLock		dq	0
 push 	rbx
 push 	r12
+push 	r13
+
+mov 	r13, qword [userLimit]
 
 mov 	rdi, msgThread1
 call 	printString
 
+SNLOOP:
 call 	spinLock
 mov 	rbx, qword [currentIndex]
 inc 	qword [currentIndex]
 call 	spinUnlock
 
-SNLOOP:
-cmp 	rbx, qword [userLimit]
-ja 		SNLOOPEND
+cmp 	qword [currentIndex], r13
+jbe 	SNLOOPBODY
+jmp 	SNLOOPEND
+
+SNLOOPBODY:
+mov 	rdi, rbx
+call 	isPrime
+cmp 	rax, TRUE					;if prime then not a Smith Number
+je		notSN
 
 mov 	rdi, rbx
 call 	findSumPrimeFactors
@@ -403,14 +413,16 @@ mov 	r12, rax					;prime sum
 
 mov 	rdi, rbx
 call 	findSumOfDigits
-cmp 	rax, r12
+cmp 	rax, r12					;comparing prime factor sum and sum of the digits
 jne 	notSN
+
 lock inc 	qword [smithNumberCount]
+
 notSN:
-inc 	rbx
 jmp 	SNLOOP
 
 SNLOOPEND:
+pop 	r13
 pop 	r12
 pop 	rbx
 
@@ -440,35 +452,36 @@ isPrime:
 
 push 	rbx
 push 	r12
+push 	r13
 
 cmp 	rdi, 1
 jbe 	returnFalse
-jmp 	checkForLoop
+
+;for(int i = 2; i <= n/2; i++)
+mov 	r12, 2
+mov 	r13, rdi
+shr 	r13, 1				;n/2
+
+isPrimeLoop:
+cmp 	r12, r13			;if (i <= n/2)
+ja 		returnTrue
+mov 	rax, rdi			;rax = n
+cqo
+div 	r12d				;n % i
+inc 	r12
+cmp 	rdx, 0				;if(n % i == 0) then return false
+je 		returnFalse
+jmp 	isPrimeLoop
+
+returnTrue:
+mov 	rax, TRUE
+jmp 	isPrimeComplete
+
 returnFalse:
 mov 	rax, FALSE
-jmp 	done3
 
-checkForLoop:					
-mov 	r12, 2					;int i = 2
-mov 	rax, rdi
-cqo
-div 	r12d			
-mov 	qword [tmpNum], rax		;n/2
-
-forLoop:						;for(int i = 2; i <= n/2; i++)
-mov 	rax, rdi
-cqo
-div 	r12d					;n % i
-inc 	r12						;i++
-cmp 	rdx, 0					;if(n % i == 0)
-je 		returnFalse				;return false
-cmp 	r12, qword [tmpNum]		
-jbe 	forLoop
-
-mov 	rax, TRUE
-
-done3:
-
+isPrimeComplete:
+pop 	r13
 pop 	r12
 pop 	rbx
 
@@ -497,23 +510,20 @@ findSumOfDigits:
 push 	rbx
 push 	r12
 
-mov 	r12, 0
-mov 	rax, rdi
+mov 	r12, 0			;int sum = 0
 
-whileCondition:
-cmp 	rdi, 0
-ja 		whileBody
-jmp 	sumFound
-whileBody:
-cqo
-div 	dword [qTen]
-add 	r12, rdx
+sumWhileLoop:
+cmp 	rdi, 0			;while (n > 0)
+ja		calculateSum
+jmp 	sumCalculated
+calculateSum:
 mov 	rax, rdi
 cqo
-div 	dword [qTen]
-mov 	rdi, rax
-jmp 	whileCondition
-sumFound:
+div 	dword [qTen]	;n % 10
+add 	r12, rdx		;sumDigits = sumDigits + (n % 10)
+mov 	rdi, rax		;n = n / 10
+jmp 	sumWhileLoop
+sumCalculated:
 mov 	rax, r12
 
 pop 	r12
