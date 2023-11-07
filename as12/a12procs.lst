@@ -156,138 +156,138 @@
    156 00000007 4157                   push r15
    157                                 
    158 00000009 4883FF01               cmp rdi, 1
-   159 0000000D 0F84F8000000           je usageErr
+   159 0000000D 0F8401010000           je usageErr
    160                                 
    161 00000013 4883FF01               cmp rdi, 1
-   162 00000017 0F82D6000000           jb clERR
+   162 00000017 0F82DF000000           jb clERR
    163                                 
    164 0000001D 4883FF05               cmp rdi, 5
-   165 00000021 0F87CC000000           ja clERR
+   165 00000021 0F87D5000000           ja clERR
    166                                 
    167 00000027 49C7C401000000         mov r12, 1
    168 0000002E 49C7C500000000         mov r13, 0
    169 00000035 4E8B3CE6               mov r15, qword [rsi + r12 * 8]
    170 00000039 438A042F               mov al, byte [r15 + r13]
    171 0000003D 3C2D                   cmp al, "-"
-   172 0000003F 0F8544010000           jne threadSpecErr
+   172 0000003F 0F854D010000           jne threadSpecErr
    173 00000045 49FFC5                 inc r13
    174 00000048 438A042F               mov al, byte [r15 + r13]
    175 0000004C 3C74                   cmp al, "t"
-   176 0000004E 0F8535010000           jne threadSpecErr
+   176 0000004E 0F853E010000           jne threadSpecErr
    177 00000054 49FFC5                 inc r13
    178 00000057 438A042F               mov al, byte [r15 + r13]
    179 0000005B 3C00                   cmp al, NULL
-   180 0000005D 0F8526010000           jne threadSpecErr
+   180 0000005D 0F852F010000           jne threadSpecErr
    181                                 
    182 00000063 49FFC4                 inc r12
    183 00000066 57                     push rdi
    184 00000067 56                     push rsi
    185 00000068 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
    186 0000006C 4889D6                 mov rsi, rdx
-   187 0000006F E835010000             call aSenary2int
+   187 0000006F E83E010000             call aSenary2int
    188 00000074 5E                     pop rsi
    189 00000075 5F                     pop rdi
    190                                 
    191 00000076 4883F800               cmp rax, FALSE
-   192 0000007A 0F84F4000000           je threadValueErr
-   193 00000080 488B02                 mov rax, qword [rdx]
-   194 00000083 4883F801               cmp rax, THREAD_MIN
-   195 00000087 0F8293000000           jb threadRangeErr
-   196 0000008D 4883F808               cmp rax, THREAD_MAX
-   197 00000091 0F8789000000           ja threadRangeErr
+   192 0000007A 0F84FD000000           je threadValueErr
+   193 00000080 8B02                   mov eax, dword [rdx]
+   194 00000082 83F801                 cmp eax, THREAD_MIN
+   195 00000085 0F829E000000           jb threadRangeErr
+   196 0000008B 83F808                 cmp eax, THREAD_MAX
+   197 0000008E 0F8795000000           ja threadRangeErr
    198                                 
-   199 00000097 49C7C500000000         mov r13, 0
-   200 0000009E 49FFC4                 inc r12
-   201 000000A1 4E8B3CE6               mov r15, qword [rsi + r12 * 8]
-   202 000000A5 438A042F               mov al, byte [r15 + r13]
-   203 000000A9 3C2D                   cmp al, "-"
-   204 000000AB 0F85AE000000           jne limitSpecErr
-   205 000000B1 49FFC5                 inc r13
-   206 000000B4 438A042F               mov al, byte [r15 + r13]
-   207 000000B8 3C6C                   cmp al, "l"
-   208 000000BA 0F859F000000           jne limitSpecErr
-   209 000000C0 49FFC5                 inc r13
-   210 000000C3 438A042F               mov al, byte [r15 + r13]
-   211 000000C7 3C00                   cmp al, NULL
-   212 000000C9 0F8590000000           jne limitSpecErr
+   199 00000094 49C7C500000000         mov r13, 0
+   200 0000009B 49FFC4                 inc r12
+   201 0000009E 4E8B3CE6               mov r15, qword [rsi + r12 * 8]
+   202 000000A2 438A042F               mov al, byte [r15 + r13]
+   203 000000A6 3C2D                   cmp al, "-"
+   204 000000A8 0F85BA000000           jne limitSpecErr
+   205 000000AE 49FFC5                 inc r13
+   206 000000B1 438A042F               mov al, byte [r15 + r13]
+   207 000000B5 3C6C                   cmp al, "l"
+   208 000000B7 0F85AB000000           jne limitSpecErr
+   209 000000BD 49FFC5                 inc r13
+   210 000000C0 438A042F               mov al, byte [r15 + r13]
+   211 000000C4 3C00                   cmp al, NULL
+   212 000000C6 0F859C000000           jne limitSpecErr
    213                                 
-   214 000000CF 49FFC4                 inc r12
-   215 000000D2 57                     push rdi
-   216 000000D3 56                     push rsi
-   217 000000D4 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
-   218 000000D8 4889CE                 mov rsi, rcx
-   219 000000DB E8C9000000             call aSenary2int
-   220 000000E0 5E                     pop rsi
-   221 000000E1 5F                     pop rdi
-   222 000000E2 4883F800               cmp rax, FALSE
-   223 000000E6 7466                   je limitValueErr
+   214 000000CC 49FFC4                 inc r12
+   215 000000CF 57                     push rdi
+   216 000000D0 56                     push rsi
+   217 000000D1 4A8B3CE6               mov rdi, qword [rsi + r12 * 8]
+   218 000000D5 4889CE                 mov rsi, rcx
+   219 000000D8 E8D5000000             call aSenary2int
+   220 000000DD 5E                     pop rsi
+   221 000000DE 5F                     pop rdi
+   222 000000DF 4883F800               cmp rax, FALSE
+   223 000000E3 7472                   je limitValueErr
    224                                 
-   225 000000E8 488B01                 mov rax, qword [rcx]
-   226 000000EB 4883F80A               cmp rax, LIMIT_MIN
-   227 000000EF 7648                   jbe limitRangeErr
+   225 000000E5 488B01                 mov rax, qword [rcx]
+   226 000000E8 4883F80A               cmp rax, LIMIT_MIN
+   227 000000EC 7254                   jb limitRangeErr
    228                                 
-   229 000000F1 483D00286BEE           cmp rax, LIMIT_MAX
-   230 000000F7 7740                   ja limitRangeErr
+   229 000000EE 483D00286BEE           cmp rax, LIMIT_MAX
+   230 000000F4 774C                   ja limitRangeErr
    231                                 
-   232                                 clERR:
-   233 000000F9 48C7C7[00000000]       mov rdi, errOptions
-   234 00000100 E866020000             call printString
-   235 00000105 48C7C000000000         mov rax, FALSE
-   236 0000010C E98E000000             jmp done
-   237                                 
-   238                                 usageErr:
-   239 00000111 48C7C7[00000000]       mov rdi, errUsage
-   240 00000118 E84E020000             call printString
-   241 0000011D 48C7C000000000         mov rax, FALSE
-   242 00000124 EB7C                   jmp done
-   243                                 
-   244                                 threadRangeErr:
-   245 00000126 48C7C7[00000000]       mov rdi, errTRange
-   246 0000012D E839020000             call printString
-   247 00000132 48C7C000000000         mov rax, FALSE
-   248 00000139 EB67                   jmp done
-   249                                 
-   250                                 limitRangeErr:
-   251 0000013B 48C7C7[00000000]       mov rdi, errLRange
-   252 00000142 E824020000             call printString
-   253 00000147 48C7C000000000         mov rax, FALSE
-   254 0000014E EB52                   jmp done
-   255                                 
-   256                                 limitValueErr:
-   257 00000150 48C7C7[00000000]       mov rdi, errLValue
-   258 00000157 E80F020000             call printString
-   259 0000015C 48C7C000000000         mov rax, FALSE
-   260 00000163 EB3D                   jmp done
-   261                                 
-   262                                 limitSpecErr:
-   263 00000165 48C7C7[00000000]       mov rdi, errLSpec
-   264 0000016C E8FA010000             call printString
-   265 00000171 48C7C000000000         mov rax, FALSE
-   266 00000178 EB28                   jmp done
-   267                                 
-   268                                 threadValueErr:
-   269 0000017A 48C7C7[00000000]       mov rdi, errTValue
-   270 00000181 E8E5010000             call printString
-   271 00000186 48C7C000000000         mov rax, FALSE
-   272 0000018D EB13                   jmp done
-   273                                 
-   274                                 threadSpecErr:
-   275 0000018F 48C7C7[00000000]       mov rdi, errTSpec
-   276 00000196 E8D0010000             call printString
-   277 0000019B 48C7C000000000         mov rax, FALSE
-   278 000001A2 EBFE                   jmp done
-   279                                 
-   280                                 done:
-   281 000001A4 415F                   pop r15
-   282 000001A6 415E                   pop r14
-   283 000001A8 415D                   pop r13
-   284 000001AA 415C                   pop r12
-   285 000001AC 5B                     pop rbx
-   286                                 
-   287 000001AD C3                     ret
-   288                                 
+   232 000000F6 48C7C001000000         mov rax, TRUE
+   233 000000FD E9A6000000             jmp done
+   234                                 
+   235                                 clERR:
+   236 00000102 48C7C7[00000000]       mov rdi, errOptions
+   237 00000109 E8C2020000             call printString
+   238 0000010E 48C7C000000000         mov rax, FALSE
+   239 00000115 E98E000000             jmp done
+   240                                 
+   241                                 usageErr:
+   242 0000011A 48C7C7[00000000]       mov rdi, errUsage
+   243 00000121 E8AA020000             call printString
+   244 00000126 48C7C000000000         mov rax, FALSE
+   245 0000012D EB7C                   jmp done
+   246                                 
+   247                                 threadRangeErr:
+   248 0000012F 48C7C7[00000000]       mov rdi, errTRange
+   249 00000136 E895020000             call printString
+   250 0000013B 48C7C000000000         mov rax, FALSE
+   251 00000142 EB67                   jmp done
+   252                                 
+   253                                 limitRangeErr:
+   254 00000144 48C7C7[00000000]       mov rdi, errLRange
+   255 0000014B E880020000             call printString
+   256 00000150 48C7C000000000         mov rax, FALSE
+   257 00000157 EB52                   jmp done
+   258                                 
+   259                                 limitValueErr:
+   260 00000159 48C7C7[00000000]       mov rdi, errLValue
+   261 00000160 E86B020000             call printString
+   262 00000165 48C7C000000000         mov rax, FALSE
+   263 0000016C EB3D                   jmp done
+   264                                 
+   265                                 limitSpecErr:
+   266 0000016E 48C7C7[00000000]       mov rdi, errLSpec
+   267 00000175 E856020000             call printString
+   268 0000017A 48C7C000000000         mov rax, FALSE
+   269 00000181 EB28                   jmp done
+   270                                 
+   271                                 threadValueErr:
+   272 00000183 48C7C7[00000000]       mov rdi, errTValue
+   273 0000018A E841020000             call printString
+   274 0000018F 48C7C000000000         mov rax, FALSE
+   275 00000196 EB13                   jmp done
+   276                                 
+   277                                 threadSpecErr:
+   278 00000198 48C7C7[00000000]       mov rdi, errTSpec
+   279 0000019F E82C020000             call printString
+   280 000001A4 48C7C000000000         mov rax, FALSE
+   281 000001AB EBFE                   jmp done
+   282                                 
+   283                                 done:
+   284 000001AD 415F                   pop r15
+   285 000001AF 415E                   pop r14
+   286 000001B1 415D                   pop r13
+   287 000001B3 415C                   pop r12
+   288 000001B5 5B                     pop rbx
    289                                 
-   290                                 
+   290 000001B6 C3                     ret
    291                                 
    292                                 
    293                                 
@@ -296,92 +296,92 @@
    296                                 
    297                                 
    298                                 
-   299                                 [global aSenary2int]
-   300                                 aSenary2int:
+   299                                 
+   300                                 
    301                                 
-   302 000001AE 53                     push rbx
-   303 000001AF 4153                   push r11
-   304 000001B1 4154                   push r12
-   305 000001B3 4155                   push r13
-   306 000001B5 4156                   push r14
-   307                                 
-   308 000001B7 49C7C300000000         mov r11, 0
-   309                                 countPos:
-   310 000001BE 428A041F               mov al, byte [rdi + r11]
-   311 000001C2 49FFC3                 inc r11
-   312 000001C5 3C00                   cmp al, NULL
-   313 000001C7 75F3                   jne countPos
-   314 000001C9 49FFCB                 dec r11
-   315                                 
-   316 000001CC 49C7C400000000         mov r12, 0
-   317 000001D3 4D89DD                 mov r13, r11
-   318 000001D6 49FFCD                 dec r13
-   319 000001D9 48C7C306000000         mov rbx, 6
-   320 000001E0 49C7C600000000         mov r14, 0
-   321                                 
-   322                                 toDigit:
-   323 000001E7 4A0FB60427             movzx rax, byte [rdi + r12]
+   302                                 [global aSenary2int]
+   303                                 aSenary2int:
+   304                                 
+   305 000001B7 53                     push rbx
+   306 000001B8 4153                   push r11
+   307 000001BA 4154                   push r12
+   308 000001BC 4155                   push r13
+   309 000001BE 4156                   push r14
+   310                                 
+   311 000001C0 49C7C300000000         mov r11, 0
+   312                                 countPos:
+   313 000001C7 428A041F               mov al, byte [rdi + r11]
+   314 000001CB 49FFC3                 inc r11
+   315 000001CE 3C00                   cmp al, NULL
+   316 000001D0 75F3                   jne countPos
+   317 000001D2 49FFCB                 dec r11
+   318                                 
+   319 000001D5 49C7C400000000         mov r12, 0
+   320 000001DC 4D89DD                 mov r13, r11
+   321 000001DF 49FFCD                 dec r13
+   322 000001E2 48C7C306000000         mov rbx, 6
+   323 000001E9 49C7C600000000         mov r14, 0
    324                                 
-   325 000001EC 3C30                   cmp al, "0"
-   326 000001EE 7252                   jb valueErr
+   325                                 toDigit:
+   326 000001F0 4A0FB60427             movzx rax, byte [rdi + r12]
    327                                 
-   328 000001F0 3C39                   cmp al, "9"
-   329 000001F2 774E                   ja valueErr
+   328 000001F5 3C30                   cmp al, "0"
+   329 000001F7 7252                   jb valueErr
    330                                 
-   331 000001F4 2C30                   sub al, 48
-   332                                 
-   333 000001F6 4983FD00               cmp r13, 0
-   334 000001FA 7500                   jne exp
-   335 000001FC EB09                   jmp continue
-   336                                 
-   337                                 exp:
-   338 000001FE F7E3                   mul ebx
-   339 00000200 49FFCD                 dec r13
-   340 00000203 4983FD00               cmp r13, 0
-   341 00000207 75F3                   jne exp
-   342                                 
-   343                                 continue:
-   344 00000209 4901C6                 add r14, rax
+   331 000001F9 3C39                   cmp al, "9"
+   332 000001FB 774E                   ja valueErr
+   333                                 
+   334 000001FD 2C30                   sub al, 48
+   335                                 
+   336 000001FF 4983FD00               cmp r13, 0
+   337 00000203 7500                   jne exp
+   338 00000205 EB09                   jmp continue
+   339                                 
+   340                                 exp:
+   341 00000207 F7E3                   mul ebx
+   342 00000209 49FFCD                 dec r13
+   343 0000020C 4983FD00               cmp r13, 0
+   344 00000210 75F3                   jne exp
    345                                 
-   346 0000020C 49FFC4                 inc r12
-   347 0000020F 49FFCB                 dec r11
-   348 00000212 4D89DD                 mov r13, r11
-   349 00000215 49FFCD                 dec r13
-   350 00000218 4983FB00               cmp r11, 0
-   351 0000021C 75C7                   jne toDigit
-   352                                 
-   353 0000021E 4983FE00               cmp r14, 0
-   354 00000222 761E                   jbe valueErr
+   346                                 continue:
+   347 00000212 4901C6                 add r14, rax
+   348                                 
+   349 00000215 49FFC4                 inc r12
+   350 00000218 49FFCB                 dec r11
+   351 0000021B 4D89DD                 mov r13, r11
+   352 0000021E 49FFCD                 dec r13
+   353 00000221 4983FB00               cmp r11, 0
+   354 00000225 75C7                   jne toDigit
    355                                 
-   356 00000224 4983FE0A               cmp r14, 10
-   357 00000228 7200                   jb returnDword
-   358 0000022A EB0A                   jmp returnQword
-   359                                 
-   360                                 returnDword:
-   361 0000022C 448936                 mov dword [rsi], r14d
-   362 0000022F 48C7C001000000         mov rax, TRUE
-   363 00000236 EB13                   jmp done2
-   364                                 
-   365                                 returnQword:
-   366 00000238 4C8936                 mov qword [rsi], r14
-   367 0000023B 48C7C001000000         mov rax, TRUE
-   368 00000242 EB07                   jmp done2
-   369                                 
-   370                                 valueErr:
-   371 00000244 48C7C000000000         mov rax, FALSE
-   372 0000024B EBFE                   jmp done2
-   373                                 
-   374                                 done2:
-   375 0000024D 415E                   pop r14
-   376 0000024F 415D                   pop r13
-   377 00000251 415C                   pop r12
-   378 00000253 415B                   pop r11
-   379 00000255 5B                     pop rbx
-   380                                 
-   381 00000256 C3                     ret
-   382                                 
+   356 00000227 4983FE00               cmp r14, 0
+   357 0000022B 761E                   jbe valueErr
+   358                                 
+   359 0000022D 4983FE0A               cmp r14, 10
+   360 00000231 7200                   jb returnDword
+   361 00000233 EB0A                   jmp returnQword
+   362                                 
+   363                                 returnDword:
+   364 00000235 448936                 mov dword [rsi], r14d
+   365 00000238 48C7C001000000         mov rax, TRUE
+   366 0000023F EB13                   jmp done2
+   367                                 
+   368                                 returnQword:
+   369 00000241 4C8936                 mov qword [rsi], r14
+   370 00000244 48C7C001000000         mov rax, TRUE
+   371 0000024B EB07                   jmp done2
+   372                                 
+   373                                 valueErr:
+   374 0000024D 48C7C000000000         mov rax, FALSE
+   375 00000254 EBFE                   jmp done2
+   376                                 
+   377                                 done2:
+   378 00000256 415E                   pop r14
+   379 00000258 415D                   pop r13
+   380 0000025A 415C                   pop r12
+   381 0000025C 415B                   pop r11
+   382 0000025E 5B                     pop rbx
    383                                 
-   384                                 
+   384 0000025F C3                     ret
    385                                 
    386                                 
    387                                 
@@ -394,15 +394,15 @@
    394                                 
    395                                 
    396                                 
-   397                                 [common userLimit 1:8]
-   398                                 [common smithNumberCount 1:8]
+   397                                 
+   398                                 
    399                                 
-   400                                 [global findSmithNumberCount]
-   401                                 findSmithNumberCount:
+   400                                 [common userLimit 1:8]
+   401                                 [common smithNumberCount 1:8]
    402                                 
-   403                                 
-   404                                 
-   405 00000257 C3                     ret
+   403                                 [global findSmithNumberCount]
+   404                                 findSmithNumberCount:
+   405                                 
    406                                 
    407                                 
    408                                 
@@ -411,103 +411,103 @@
    411                                 
    412                                 
    413                                 
-   414                                 
-   415                                 
+   414 00000260 53                     push rbx
+   415 00000261 4154                   push r12
    416                                 
-   417                                 
-   418                                 
+   417 00000263 48C7C7[00000000]       mov rdi, msgThread1
+   418 0000026A E861010000             call printString
    419                                 
-   420                                 
-   421                                 
-   422                                 
-   423                                 
+   420 0000026F E836010000             call spinLock
+   421 00000274 488B1C25[00000000]     mov rbx, qword [currentIndex]
+   422 0000027C 48FF0425[00000000]     inc qword [currentIndex]
+   423 00000284 E837010000             call spinUnlock
    424                                 
-   425                                 
-   426                                 [global isPrime]
-   427                                 isPrime:
+   425                                 SNLOOP:
+   426 00000289 483B1C25[00000000]     cmp rbx, qword [userLimit]
+   427 00000291 7724                   ja SNLOOPEND
    428                                 
-   429 00000258 53                     push rbx
-   430 00000259 4154                   push r12
-   431                                 
-   432 0000025B 4883FF01               cmp rdi, 1
-   433 0000025F 7600                   jbe returnFalse
-   434 00000261 EB07                   jmp checkForLoop
-   435                                 returnFalse:
-   436 00000263 48C7C000000000         mov rax, FALSE
-   437 0000026A EB37                   jmp done3
-   438                                 
-   439                                 checkForLoop:
-   440 0000026C 49C7C402000000         mov r12, 2
-   441 00000273 4889F8                 mov rax, rdi
-   442 00000276 4899                   cqo
-   443 00000278 41F7F4                 div r12d
-   444 0000027B 48890425[00000000]     mov qword [tmpNum], rax
+   429 00000293 4889DF                 mov rdi, rbx
+   430 00000296 E8A7000000             call findSumPrimeFactors
+   431 0000029B 4989C4                 mov r12, rax
+   432                                 
+   433 0000029E 4889DF                 mov rdi, rbx
+   434 000002A1 E863000000             call findSumOfDigits
+   435 000002A6 4C39E0                 cmp rax, r12
+   436 000002A9 7507                   jne notSN
+   437 000002AB F048FF0425[00000000]     lock inc qword [smithNumberCount]
+   438                                 notSN:
+   439 000002B4 48FFC3                 inc rbx
+   440 000002B7 EBCE                   jmp SNLOOP
+   441                                 
+   442                                 SNLOOPEND:
+   443 000002B9 415C                   pop r12
+   444 000002BB 5B                     pop rbx
    445                                 
-   446                                 forLoop:
-   447 00000283 4889F8                 mov rax, rdi
-   448 00000286 4899                   cqo
-   449 00000288 41F7F4                 div r12d
-   450 0000028B 49FFC4                 inc r12
-   451 0000028E 4883FA00               cmp rdx, 0
-   452 00000292 74CD                   je returnFalse
-   453 00000294 4C3B2425[00000000]     cmp r12, qword [tmpNum]
-   454 0000029C 76E3                   jbe forLoop
+   446 000002BC C3                     ret
+   447                                 
+   448                                 
+   449                                 
+   450                                 
+   451                                 
+   452                                 
+   453                                 
+   454                                 
    455                                 
-   456 0000029E 48C7C001000000         mov rax, TRUE
+   456                                 
    457                                 
-   458                                 done3:
+   458                                 
    459                                 
-   460 000002A5 415C                   pop r12
-   461 000002A7 5B                     pop rbx
+   460                                 
+   461                                 
    462                                 
-   463 000002A8 C3                     ret
+   463                                 
    464                                 
    465                                 
    466                                 
-   467                                 
-   468                                 
+   467                                 [global isPrime]
+   468                                 isPrime:
    469                                 
-   470                                 
-   471                                 
+   470 000002BD 53                     push rbx
+   471 000002BE 4154                   push r12
    472                                 
-   473                                 
-   474                                 
-   475                                 
-   476                                 
-   477                                 
-   478                                 
+   473 000002C0 4883FF01               cmp rdi, 1
+   474 000002C4 7600                   jbe returnFalse
+   475 000002C6 EB07                   jmp checkForLoop
+   476                                 returnFalse:
+   477 000002C8 48C7C000000000         mov rax, FALSE
+   478 000002CF EB37                   jmp done3
    479                                 
-   480                                 
-   481                                 
-   482                                 [global findSumOfDigits]
-   483                                 findSumOfDigits:
-   484                                 
-   485 000002A9 53                     push rbx
-   486 000002AA 4154                   push r12
-   487                                 
-   488 000002AC 49C7C400000000         mov r12, 0
-   489 000002B3 4889F8                 mov rax, rdi
-   490                                 
-   491                                 whileCondition:
-   492 000002B6 4883FF00               cmp rdi, 0
-   493 000002BA 7700                   ja whileBody
-   494 000002BC EB1B                   jmp sumFound
-   495                                 whileBody:
-   496 000002BE 4899                   cqo
-   497 000002C0 F73425[00000000]       div dword [qTen]
-   498 000002C7 4901D4                 add r12, rdx
-   499 000002CA 4889F8                 mov rax, rdi
-   500 000002CD 4899                   cqo
-   501 000002CF F73425[00000000]       div dword [qTen]
-   502 000002D6 4889C7                 mov rdi, rax
-   503 000002D9 EBD9                   jmp whileCondition
-   504                                 sumFound:
-   505 000002DB 4C89E0                 mov rax, r12
+   480                                 checkForLoop:
+   481 000002D1 49C7C402000000         mov r12, 2
+   482 000002D8 4889F8                 mov rax, rdi
+   483 000002DB 4899                   cqo
+   484 000002DD 41F7F4                 div r12d
+   485 000002E0 48890425[00000000]     mov qword [tmpNum], rax
+   486                                 
+   487                                 forLoop:
+   488 000002E8 4889F8                 mov rax, rdi
+   489 000002EB 4899                   cqo
+   490 000002ED 41F7F4                 div r12d
+   491 000002F0 49FFC4                 inc r12
+   492 000002F3 4883FA00               cmp rdx, 0
+   493 000002F7 74CD                   je returnFalse
+   494 000002F9 4C3B2425[00000000]     cmp r12, qword [tmpNum]
+   495 00000301 76E3                   jbe forLoop
+   496                                 
+   497 00000303 48C7C001000000         mov rax, TRUE
+   498                                 
+   499                                 done3:
+   500                                 
+   501 0000030A 415C                   pop r12
+   502 0000030C 5B                     pop rbx
+   503                                 
+   504 0000030D C3                     ret
+   505                                 
    506                                 
-   507 000002DE 415C                   pop r12
-   508 000002E0 5B                     pop rbx
+   507                                 
+   508                                 
    509                                 
-   510 000002E1 C3                     ret
+   510                                 
    511                                 
    512                                 
    513                                 
@@ -520,112 +520,112 @@
    520                                 
    521                                 
    522                                 
-   523                                 
-   524                                 
+   523                                 [global findSumOfDigits]
+   524                                 findSumOfDigits:
    525                                 
-   526                                 
-   527                                 
+   526 0000030E 53                     push rbx
+   527 0000030F 4154                   push r12
    528                                 
-   529                                 
-   530                                 
+   529 00000311 49C7C400000000         mov r12, 0
+   530 00000318 4889F8                 mov rax, rdi
    531                                 
-   532                                 
-   533                                 
-   534                                 
-   535                                 
-   536                                 [global findSumPrimeFactors]
-   537                                 findSumPrimeFactors:
-   538 000002E2 53                      push rbx
-   539 000002E3 4154                    push r12
-   540 000002E5 4155                    push r13
-   541                                 
-   542 000002E7 4889FB                  mov rbx, rdi
-   543 000002EA 49C7C402000000          mov r12, 2
-   544 000002F1 49C7C500000000          mov r13, 0
-   545                                 
-   546                                 
-   547                                 primeFactorsLoop:
-   548 000002F8 4883FB01                cmp rbx, 1
-   549 000002FC 7E41                    jle primeFactorsDone
+   532                                 whileCondition:
+   533 0000031B 4883FF00               cmp rdi, 0
+   534 0000031F 7700                   ja whileBody
+   535 00000321 EB1B                   jmp sumFound
+   536                                 whileBody:
+   537 00000323 4899                   cqo
+   538 00000325 F73425[00000000]       div dword [qTen]
+   539 0000032C 4901D4                 add r12, rdx
+   540 0000032F 4889F8                 mov rax, rdi
+   541 00000332 4899                   cqo
+   542 00000334 F73425[00000000]       div dword [qTen]
+   543 0000033B 4889C7                 mov rdi, rax
+   544 0000033E EBD9                   jmp whileCondition
+   545                                 sumFound:
+   546 00000340 4C89E0                 mov rax, r12
+   547                                 
+   548 00000343 415C                   pop r12
+   549 00000345 5B                     pop rbx
    550                                 
-   551                                 
-   552 000002FE 4889D8                  mov rax, rbx
-   553 00000301 48C7C200000000          mov rdx, 0
-   554 00000308 49F7F4                  div r12
-   555 0000030B 4883FA00                cmp rdx, 0
-   556 0000030F 751B                    jne notDivisible
+   551 00000346 C3                     ret
+   552                                 
+   553                                 
+   554                                 
+   555                                 
+   556                                 
    557                                 
-   558                                 primeDigitsLoop:
-   559 00000311 4C89E7                  mov rdi, r12
-   560 00000314 E88BFFFFFF              call findSumOfDigits
-   561 00000319 4901C5                  add r13, rax
+   558                                 
+   559                                 
+   560                                 
+   561                                 
    562                                 
    563                                 
-   564 0000031C 4889D8                  mov rax, rbx
-   565 0000031F 48C7C200000000          mov rdx, 0
-   566 00000326 49F7F4                  div r12
-   567 00000329 4889C3                  mov rbx, rax
-   568 0000032C EB0F                    jmp primeIfDone
+   564                                 
+   565                                 
+   566                                 
+   567                                 
+   568                                 
    569                                 
-   570                                 notDivisible:
+   570                                 
    571                                 
-   572 0000032E 49FFC4                  inc r12
-   573 00000331 4C89E7                  mov rdi, r12
-   574 00000334 E81AFFFFFF              call isPrime
-   575 00000339 4883F801                cmp rax, TRUE
-   576 0000033D 75ED                    jne notDivisible
-   577                                 
-   578                                 primeIfDone:
-   579 0000033F EBB5                    jmp primeFactorsLoop
-   580                                 
-   581                                 primeFactorsDone:
-   582 00000341 4C89E8                  mov rax, r13
-   583                                 
-   584 00000344 415D                    pop r13
-   585 00000346 415C                    pop r12
-   586 00000348 5B                      pop rbx
-   587 00000349 C3                      ret
-   588                                 
-   589                                 
-   590                                 
+   572                                 
+   573                                 
+   574                                 
+   575                                 
+   576                                 
+   577                                 [global findSumPrimeFactors]
+   578                                 findSumPrimeFactors:
+   579 00000347 53                      push rbx
+   580 00000348 4154                    push r12
+   581 0000034A 4155                    push r13
+   582                                 
+   583 0000034C 4889FB                  mov rbx, rdi
+   584 0000034F 49C7C402000000          mov r12, 2
+   585 00000356 49C7C500000000          mov r13, 0
+   586                                 
+   587                                 
+   588                                 primeFactorsLoop:
+   589 0000035D 4883FB01                cmp rbx, 1
+   590 00000361 7E41                    jle primeFactorsDone
    591                                 
    592                                 
-   593                                 
-   594                                 
-   595                                 [global spinLock1]
-   596                                 spinLock:
-   597 0000034A 48C7C001000000          mov rax, 1
+   593 00000363 4889D8                  mov rax, rbx
+   594 00000366 48C7C200000000          mov rdx, 0
+   595 0000036D 49F7F4                  div r12
+   596 00000370 4883FA00                cmp rdx, 0
+   597 00000374 751B                    jne notDivisible
    598                                 
-   599 00000351 F048870425[00000000]     lock xchg rax, qword [myLock]
-   600                                 
-   601                                 
-   602                                 
+   599                                 primeDigitsLoop:
+   600 00000376 4C89E7                  mov rdi, r12
+   601 00000379 E88BFFFFFF              call findSumOfDigits
+   602 0000037E 4901C5                  add r13, rax
    603                                 
-   604 0000035A 4885C0                  test rax, rax
-   605                                 
-   606                                 
-   607                                 
-   608                                 
-   609                                 
-   610 0000035D 75E9                    jnz spinLock
-   611                                 
+   604                                 
+   605 00000381 4889D8                  mov rax, rbx
+   606 00000384 48C7C200000000          mov rdx, 0
+   607 0000038B 49F7F4                  div r12
+   608 0000038E 4889C3                  mov rbx, rax
+   609 00000391 EB0F                    jmp primeIfDone
+   610                                 
+   611                                 notDivisible:
    612                                 
-   613 0000035F C3                      ret
-   614                                 
-   615                                 
-   616                                 
-   617                                 
+   613 00000393 49FFC4                  inc r12
+   614 00000396 4C89E7                  mov rdi, r12
+   615 00000399 E81AFFFFFF              call isPrime
+   616 0000039E 4883F801                cmp rax, TRUE
+   617 000003A2 75ED                    jne notDivisible
    618                                 
-   619                                 [global spinUnlock]
-   620                                 spinUnlock:
-   621 00000360 48C7C000000000          mov rax, 0
-   622                                 
-   623 00000367 48870425[00000000]      xchg rax, qword [myLock]
+   619                                 primeIfDone:
+   620 000003A4 EBB5                    jmp primeFactorsLoop
+   621                                 
+   622                                 primeFactorsDone:
+   623 000003A6 4C89E8                  mov rax, r13
    624                                 
-   625 0000036F C3                      ret
-   626                                 
-   627                                 
-   628                                 
+   625 000003A9 415D                    pop r13
+   626 000003AB 415C                    pop r12
+   627 000003AD 5B                      pop rbx
+   628 000003AE C3                      ret
    629                                 
    630                                 
    631                                 
@@ -633,39 +633,80 @@
    633                                 
    634                                 
    635                                 
-   636                                 
-   637                                 
-   638                                 
-   639                                 [global printString]
-   640                                 printString:
+   636                                 [global spinLock1]
+   637                                 spinLock:
+   638 000003AF 48C7C001000000          mov rax, 1
+   639                                 
+   640 000003B6 F048870425[00000000]     lock xchg rax, qword [myLock]
    641                                 
    642                                 
    643                                 
    644                                 
-   645 00000370 48C7C200000000          mov rdx, 0
-   646                                 strCountLoop:
-   647 00000377 803C1700                cmp byte [rdi+rdx], NULL
-   648 0000037B 7403                    je strCountLoopDone
-   649 0000037D 48FFC2                  inc rdx
-   650 00000380 EBF3                    jmp strCountLoop
-   651                                 strCountLoopDone:
-   652 00000382 4883FA00                cmp rdx, 0
-   653 00000386 7411                    je printStringDone
-   654                                 
+   645 000003BF 4885C0                  test rax, rax
+   646                                 
+   647                                 
+   648                                 
+   649                                 
+   650                                 
+   651 000003C2 75E9                    jnz spinLock
+   652                                 
+   653                                 
+   654 000003C4 C3                      ret
    655                                 
    656                                 
    657                                 
-   658 00000388 48C7C001000000          mov rax, SYS_write
-   659 0000038F 4889FE                  mov rsi, rdi
-   660 00000392 48C7C701000000          mov rdi, STDOUT
-   661                                 
-   662 00000399 0F05                    syscall
+   658                                 
+   659                                 
+   660                                 [global spinUnlock]
+   661                                 spinUnlock:
+   662 000003C5 48C7C000000000          mov rax, 0
    663                                 
-   664                                 
+   664 000003CC 48870425[00000000]      xchg rax, qword [myLock]
    665                                 
-   666                                 
-   667                                 printStringDone:
-   668 0000039B C3                      ret
+   666 000003D4 C3                      ret
+   667                                 
+   668                                 
    669                                 
    670                                 
    671                                 
+   672                                 
+   673                                 
+   674                                 
+   675                                 
+   676                                 
+   677                                 
+   678                                 
+   679                                 
+   680                                 [global printString]
+   681                                 printString:
+   682                                 
+   683                                 
+   684                                 
+   685                                 
+   686 000003D5 48C7C200000000          mov rdx, 0
+   687                                 strCountLoop:
+   688 000003DC 803C1700                cmp byte [rdi+rdx], NULL
+   689 000003E0 7403                    je strCountLoopDone
+   690 000003E2 48FFC2                  inc rdx
+   691 000003E5 EBF3                    jmp strCountLoop
+   692                                 strCountLoopDone:
+   693 000003E7 4883FA00                cmp rdx, 0
+   694 000003EB 7411                    je printStringDone
+   695                                 
+   696                                 
+   697                                 
+   698                                 
+   699 000003ED 48C7C001000000          mov rax, SYS_write
+   700 000003F4 4889FE                  mov rsi, rdi
+   701 000003F7 48C7C701000000          mov rdi, STDOUT
+   702                                 
+   703 000003FE 0F05                    syscall
+   704                                 
+   705                                 
+   706                                 
+   707                                 
+   708                                 printStringDone:
+   709 00000400 C3                      ret
+   710                                 
+   711                                 
+   712                                 

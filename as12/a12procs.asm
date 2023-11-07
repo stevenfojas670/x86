@@ -161,10 +161,10 @@ pop 	rdi
 
 cmp 	rax, FALSE						;checking if thread input is valid
 je 		threadValueErr
-mov 	rax, qword [rdx]				;checking if thread is in range
-cmp 	rax, THREAD_MIN
+mov 	eax, dword [rdx]				;checking if thread is in range
+cmp 	eax, THREAD_MIN
 jb 		threadRangeErr
-cmp 	rax, THREAD_MAX
+cmp 	eax, THREAD_MAX
 ja 		threadRangeErr
 
 mov 	r13, 0
@@ -195,7 +195,7 @@ je 		limitValueErr
 
 mov 	rax, qword [rcx]				;checking if limit is within range
 cmp 	rax, LIMIT_MIN
-jbe 	limitRangeErr
+jb	 	limitRangeErr
 
 cmp 	rax, LIMIT_MAX
 ja 		limitRangeErr
@@ -374,7 +374,45 @@ common	smithNumberCount	1:8
 global 	findSmithNumberCount
 findSmithNumberCount:
 
+;Display one time starting thread message
+; Obtain the next number to check (via global variable, currentIndex)
+; 	increment counter
+; while the next number is <= userLimit
+; 	Check if the number is a smith number
+; 	If the number is a smith number, increment the smith number count
+; currentIndex	dq	1
+; myLock		dq	0
+push 	rbx
+push 	r12
 
+mov 	rdi, msgThread1
+call 	printString
+
+call 	spinLock
+mov 	rbx, qword [currentIndex]
+inc 	qword [currentIndex]
+call 	spinUnlock
+
+SNLOOP:
+cmp 	rbx, qword [userLimit]
+ja 		SNLOOPEND
+
+mov 	rdi, rbx
+call 	findSumPrimeFactors
+mov 	r12, rax					;prime sum
+
+mov 	rdi, rbx
+call 	findSumOfDigits
+cmp 	rax, r12
+jne 	notSN
+lock inc 	qword [smithNumberCount]
+notSN:
+inc 	rbx
+jmp 	SNLOOP
+
+SNLOOPEND:
+pop 	r12
+pop 	rbx
 
 ret
 

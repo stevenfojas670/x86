@@ -58,12 +58,12 @@ int main(int argc, char* argv[])
 		cout << endl << bold << "   Start Counting..." <<
 				unbold << endl;
 
-		// start thread count threads
+		// // start thread count threads
 		thdList = new thread[threadCount];
 		for(unsigned int i=0; i<threadCount; i++)
 			thdList[i] = thread(findSmithNumberCount);
 
-		// wait for threads to finish
+		// // wait for threads to finish
 		for(unsigned int i=0; i<threadCount; i++)
 			thdList[i].join();
 
