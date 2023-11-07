@@ -134,55 +134,9 @@ jb 		clERR
 
 cmp 	rdi, 5
 ja 		clERR
-	
-mov 	r12, 1			;argv index
-mov 	r13, 0			;argv string counter
-mov 	r15, qword [rsi + r12 * 8]
-mov 	al, byte [r15 + r13]
-cmp 	al, "-"
-jne 	threadSpecErr
-inc 	r13
-mov 	al, byte [r15 + r13]
-cmp 	al, "t"
-jne 	threadSpecErr
-inc 	r13
-mov 	al, byte [r15 + r13]
-cmp 	al, NULL
-jne 	threadSpecErr
 
-inc 	r12
-push 	rdi
-push 	rsi
-mov 	rdi, qword [rsi + r12 * 8]
-mov 	rsi, rdx
-call 	aSenary2int
-pop 	rsi
-pop 	rdi
-
-cmp 	rax, FALSE						;checking if thread input is valid
-je 		threadValueErr
-mov 	eax, dword [rdx]				;checking if thread is in range
-cmp 	eax, THREAD_MIN
-jb 		threadRangeErr
-cmp 	eax, THREAD_MAX
-ja 		threadRangeErr
-
-mov 	r13, 0
-inc 	r12
-mov 	r15, qword [rsi + r12 * 8]
-mov 	al, byte [r15 + r13]
-cmp 	al, "-"
-jne 	limitSpecErr
-inc 	r13
-mov 	al, byte [r15 + r13]
-cmp 	al, "l"
-jne 	limitSpecErr
-inc 	r13
-mov 	al, byte [r15 + r13]
-cmp 	al, NULL
-jne 	limitSpecErr
-
-inc 	r12
+mov 	r12, rdi
+dec 	r12
 push 	rdi
 push 	rsi
 mov 	rdi, qword [rsi + r12 * 8]
@@ -200,6 +154,53 @@ jb	 	limitRangeErr
 mov 	rbx, LIMIT_MAX
 cmp 	rax, rbx
 ja 		limitRangeErr
+
+mov 	r13, 0
+dec 	r12
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + r13]
+cmp 	al, "-"
+jne 	limitSpecErr
+inc 	r13
+mov 	al, byte [r15 + r13]
+cmp 	al, "l"
+jne 	limitSpecErr
+inc 	r13
+mov 	al, byte [r15 + r13]
+cmp 	al, NULL
+jne 	limitSpecErr
+
+dec 	r12
+push 	rdi
+push 	rsi
+mov 	rdi, qword [rsi + r12 * 8]
+mov 	rsi, rdx
+call 	aSenary2int						;converting thread string to digit
+pop 	rsi
+pop 	rdi
+
+cmp 	rax, FALSE						;checking if thread input is valid
+je 		threadValueErr
+mov 	eax, dword [rdx]				;checking if thread is in range
+cmp 	eax, THREAD_MIN
+jb 		threadRangeErr
+cmp 	eax, THREAD_MAX
+ja 		threadRangeErr
+
+dec 	r12
+mov 	r13, 0
+mov 	r15, qword [rsi + r12 * 8]
+mov 	al, byte [r15 + r13]
+cmp 	al, "-"
+jne 	threadSpecErr
+inc 	r13
+mov 	al, byte [r15 + r13]
+cmp 	al, "t"
+jne 	threadSpecErr
+inc 	r13
+mov 	al, byte [r15 + r13]
+cmp 	al, NULL
+jne 	threadSpecErr
 
 mov 	rax, TRUE
 jmp 	done
@@ -292,7 +293,7 @@ mov 	r12, 0					;counter for string
 mov 	r13, r11
 dec 	r13						;n-1
 mov 	rbx, 6					;base
-mov 	r14, 0					;store
+mov 	r14, 0					;store the sum of the digits
 
 toDigit:
 movzx 	rax, byte [rdi + r12]
@@ -328,9 +329,9 @@ jne 	toDigit
 cmp 	r14, 0
 jbe 	valueErr
 
-cmp 	r14, 10
-jb 		returnDword
-jmp 	returnQword
+cmp 	r14, 10							;if less than LIMIT_MIN
+jb 		returnDword						;returns dword for thread count
+jmp 	returnQword						;returns qword for user limit
 
 returnDword:
 mov 	dword [rsi], r14d
