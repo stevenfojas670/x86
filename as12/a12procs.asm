@@ -194,7 +194,8 @@ mov 	rax, qword [rcx]				;checking if limit is within range
 cmp 	rax, LIMIT_MIN
 jb	 	limitRangeErr
 
-cmp 	rax, LIMIT_MAX
+mov 	rbx, LIMIT_MAX
+cmp 	rax, rbx
 ja 		limitRangeErr
 
 mov 	rax, TRUE

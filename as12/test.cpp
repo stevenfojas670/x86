@@ -17,5 +17,7 @@ int main(){
     if(isPrime(2) == true)
         std::cout << "2 is prime" << std::endl;
 
+    
+
     return 0;
 }
