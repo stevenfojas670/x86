@@ -7,3 +7,6 @@ as11b/*
 !a11procs.asm
 !a11/a11timer
 !makefile
+
+!**/*.txt
+!**/*.asm
