@@ -121,10 +121,15 @@ global getArgs
 getArgs:
 
 push 	rbx
+push 	r8
+push 	r9
 push 	r12
 push 	r13
 push 	r14
 push 	r15
+
+mov 	r8, rdx
+mov 	r9, rcx
 
 cmp 	rdi, 1
 je 		usageErr
@@ -154,14 +159,14 @@ inc 	r12
 push 	rdi
 push 	rsi
 mov 	rdi, qword [rsi + r12 * 8]
-mov 	rsi, rdx
+mov 	rsi, r8
 call 	aSenary2int
 pop 	rsi
 pop 	rdi
 
 cmp 	rax, FALSE						;checking if thread input is valid
 je 		threadValueErr
-mov 	eax, dword [rdx]				;checking if thread is in range
+mov 	eax, dword [r8]				;checking if thread is in range
 cmp 	eax, THREAD_MIN
 jb 		threadRangeErr
 cmp 	eax, THREAD_MAX
@@ -186,14 +191,14 @@ inc 	r12
 push 	rdi
 push 	rsi
 mov 	rdi, qword [rsi + r12 * 8]
-mov 	rsi, rcx
+mov 	rsi, r9
 call 	aSenary2int
 pop 	rsi
 pop 	rdi
 cmp 	rax, FALSE
 je 		limitValueErr
 
-mov 	rax, qword [rcx]				;checking if limit is within range
+mov 	rax, qword [r9]				;checking if limit is within range
 cmp 	rax, LIMIT_MIN
 jb	 	limitRangeErr
 
@@ -257,6 +262,8 @@ pop 	r15
 pop 	r14
 pop 	r13
 pop 	r12
+pop 	r9
+pop 	r8
 pop 	rbx
 
 ret
@@ -297,7 +304,7 @@ mov 	r14, 0					;store
 toDigit:
 movzx 	rax, byte [rdi + r12]
 
-cmp 	al, "0"
+cmp 	al, "0"					;error checking if chars are not from "0" - "9"
 jb 		valueErr
 
 cmp 	al, "9"
@@ -310,13 +317,13 @@ jne 	exp
 jmp 	continue
 
 exp:
-mul 	ebx
+mul 	ebx					;performing (base^n-1) * value
 dec 	r13
 cmp 	r13, 0
 jne 	exp
 
 continue:
-add 	r14, rax
+add 	r14, rax			;adding the sum of the combined digits
 
 inc 	r12
 dec 	r11
