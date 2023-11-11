@@ -1,0 +1,36 @@
+; *****************************************************************
+;  Name: 
+;  NSHE_ID: 
+;  Section: 
+;  Assignment: 11 B
+;  Description: 
+
+
+*****************************************************************
+
+Machine Description:
+--------------------
+<machine type (desktop/laptop/mini), processor speed, disk type (ssd, hard-drive, etc.) and memory>
+
+
+Timing:
+-------
+Large Buffer
+Average Real Time:
+
+Small Buffer
+Average Real Time:
+
+
+Percentage Change:
+
+
+
+
+Explanation:
+------------
+<not to exceed 200 words>
+
+
+
+
