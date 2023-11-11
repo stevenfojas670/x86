@@ -88,19 +88,19 @@ int main (int argc, char* argv[])
 
 		while (getRow(originalImage, picWidth, rowBuffer)) {
 
-			// switch (imgOption) {
-			// 	case GRAYSCALE:
-			// 		imageCvtToBW(picWidth, rowBuffer);
-			// 		break;
-			// 	case BRIGHTEN:
-			// 		imageBrighten(picWidth, rowBuffer);
-			// 		break;
-			// 	case DARKEN:
-			// 		imageDarken(picWidth, rowBuffer);
-			// 		break;
-			// 	default:
-			// 		cout << "Error..." << endl;
-			// }
+			switch (imgOption) {
+				case GRAYSCALE:
+					imageCvtToBW(picWidth, rowBuffer);
+					break;
+				case BRIGHTEN:
+					imageBrighten(picWidth, rowBuffer);
+					break;
+				case DARKEN:
+					imageDarken(picWidth, rowBuffer);
+					break;
+				default:
+					cout << "Error..." << endl;
+			}
 
 			if(!writeRow(newImage, picWidth, rowBuffer)) {
 				delete [] rowBuffer;

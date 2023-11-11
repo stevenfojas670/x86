@@ -64,7 +64,7 @@ BRIGHTEN	equ	1
 DARKEN		equ	2
 
 MIN_FILE_LEN	equ	5
-BUFF_SIZE	equ	1000000			; buffer size
+BUFF_SIZE	equ	2			; buffer size
 
 ; -----
 ;  Local variables for getArguments() function.
@@ -384,7 +384,7 @@ mov 	eax, dword [header + r10]	;file size
 mov 	dword [r15], eax			;storing file size
 add 	r10, 8						
 mov 	eax, dword [header + r10]	;Size of header
-mov 	r14d, eax					;storing header size for comparison
+mov 	r14d, eax					;storing header size for addition
 add 	r10, 4						
 mov 	eax, dword [header + r10]	;offset to start of image data in bytes
 add 	r10, 4						

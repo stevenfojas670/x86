@@ -1,9 +1,3 @@
-as11/*
-!as11/a11procs.asm
-!a11/imageCvt.cpp
-!a11/makefile
-
-as11b/*
-!a11procs.asm
-!a11/a11timer
-!makefile
+!**/*.txt
+!**/*.asm
+!**/*.cpp
