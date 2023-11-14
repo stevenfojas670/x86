@@ -163,7 +163,7 @@ blt 	$t4, $t3, volumeLoop
 
 # find min, estMed, max, sum, and avg
 # (ODD) Est Med will be first, last and middle value / 3
-# (EVEN) Est Med will be the first,l ast and two middle values / 4
+# (EVEN) Est Med will be the first, last and two middle values / 4
 
 la 		$t0, volumes		# volumes
 li 		$t1, 0				# counter
@@ -178,21 +178,21 @@ lw 		$t5, ($t0)
 add 	$t6, $t6, $t5		# sum = sum + volumes[i]
 sw 		$t6, vSum
 
-bgt 	$t6, $t5, swapMin	# if min > volumes[i] then swap
+bgt 	$t3, $t5, swapMin	# if min > volumes[i] then swap
 j 		checkMax
 
 swapMin:
-move 	$t6, $t5			# min = volumes[i]
-sw 		$t6, vMin
+move 	$t3, $t5			# min = volumes[i]
+sw 		$t3, vMin
 j 		skip
 
 checkMax:
-blt 	$t7, $t5, swapMax	# if max < volumes[i] then swap
+blt 	$t4, $t5, swapMax	# if max < volumes[i] then swap
 j 		skip
 
 swapMax:
-move 	$t7, $t5			# max = volumes[i]
-sw 		$t7, vMax
+move 	$t4, $t5			# max = volumes[i]
+sw 		$t4, vMax
 
 skip:
 add 	$t1, $t1, 1			# counter++
@@ -211,42 +211,73 @@ beq 	$t6, 0, isEven
 j 		isOdd
 isEven:
 
-lw 		$t5, ($t0) 			# first value
-div 	$t4, $t1, 2			# len / 2
-sub 	$t6, $t4, 1 		# len/2 - 1
-mul 	$t6, $t6, 4				# (len/2 - 1 ) * 4
-add 	$t0, $t0, $t6		# getting middle value
-lw 		$t6, ($t0)			# placing first middle value into a register
-add 	$t0, $t0, 4			# getting actual middle value
-lw 		$t7, ($t0)			# placing middle value into register
-la 		$t0, volumes		# reloading volumes address to get first index
-mul 	$t3, $t1, 4			# len * 4 to get last position in volumes
-add 	$t0, $t0, $t3		# volumes[size]
-lw 		$t8, ($t0)			# register holds volume
-add 	$t8, $t8, $t7
-add 	$t8, $t8, $t6
-add 	$t8, $t8, $t5		# first + middle1 + middle2 + last
-div 	$t8, $t8, 4			# first+mid1+mid2+last / 4
-sw 		$t8, vMid
+# get first
+# get middle 
+# middle 2
+# get last
+
+la 		$t0, volumes
+lw 		$t1, len
+
+lw 		$t2, ($t0)
+mul 	$t1, $t1, 4
+sub 	$t1, $t1, 4
+add 	$t0, $t0, $t1
+lw 		$t3, ($t0)
+add 	$t2, $t2, $t3			# first + last
+
+la 		$t0, volumes
+lw 		$t1, len
+
+div 	$t1, $t1, 2				# len / 2
+mul 	$t1, $t1, 4
+sub 	$t1, $t1, 4				# gets actual middle
+add 	$t0, $t0, $t1
+lw 		$t4, ($t0)				# middle1
+
+add 	$t0, $t0, 4
+lw 		$t5, ($t0)				# middle2
+
+add 	$t4, $t4, $t5			# mid1 + mid2
+
+add 	$t2, $t2, $t4
+div 	$t2, $t2, 4
+sw 		$t2, vMid
+
 j		done
 
 isOdd:
 
-la 		$t0, volumes
-lw 		$t5, ($t0) 			# first value
-div 	$t4, $t1, 2			# len / 2
-mul 	$t6, $t6, 4			# (len/2) * 4
-add 	$t0, $t0, $t6		# getting middle value
-lw 		$t6, ($t0)			# placing first middle value into a register
-la 		$t0, volumes		# reloading volumes address to get first index
-mul 	$t3, $t1, 4			# len * 4 to get last position in volumes
-add 	$t0, $t0, $t3		# volumes[size]
-lw 		$t8, ($t0)			# register holds volume
-add 	$t8, $t8, $t5		
-add 	$t8, $t8, $t6		# first + middle + last
-div 	$t8, $t8, 3 		# first + middle + last / 3
+
 
 done:
+
+la 		$s0, volumes
+li 		$s1, 0
+lw 		$s2, len
+
+printLoop:
+
+li 		$v0, 4
+la 		$a0, blnks
+syscall
+
+li 		$v0, 1
+lw 		$a0, ($s0)
+syscall
+
+addu 	$s0, $s0, 4
+add 	$s1, $s1, 1
+
+rem 	$t0, $s1, 8
+bnez 	$t0, skipNewLine
+
+li 		$v0, 4
+la 		$a0, newLn
+syscall
+
+skipNewLine:
+bne 	$s1, $s2, printLoop
 
 # ******************************
 #  Display results.
