@@ -751,11 +751,42 @@ estMedian:
 .globl	trapAreas
 trapAreas:
 
+subu 	$sp, $sp, 4				# pushing and extra space on the stack for the frame pointer
+sw 		$fp, ($sp)				# setting frame pointer into the clear space for it
 
+addu 	$fp, $sp, 4 			# setting the frame pointer to point to the Areas array of the stack pointer.
 
-#	YOUR CODE GOES HERE
+# perform areas algorithm
 
+move 	$t0, $fp				# areas array
+move  	$t1, $a0				# aSides array
+move	$t2, $a1				# cSides array
+move 	$t3, $a2 				# heights array
+move 	$t4, $a3				# length
+li 		$t6, 0 					# counter
 
+areasLoop:
+
+lw 		$t7, ($t1)				# t7 = aSides[i]
+lw 		$t8, ($t2)				# t8 = cSides[i]
+
+add 	$t7, $t7, $t8			# aSides + cSides
+div 	$t7, $t7, 2				# aSides + cSides / 2
+
+lw 		$t9, ($t3)				# t9 = heights[i]
+
+mul 	$t7, $t7, $t9			# height * ((aSides + cSides) / 2)
+
+sw 		$t7, ($t0)				# saving calculation into areas array
+
+# increment all address and counters
+add 	$t0, $t0, 4				# areas[i + 1]
+add 	$t1, $t1, 4				# aSides[i + 1]
+add 	$t2, $t2, 4				# cSides[i + 1]
+add 	$t3, $t3, 4				# heights[i + 1]
+add 	$t6, $t6, 1 			# counter++
+
+blt 	$t6, $t4, areasLoop
 
 .end trapAreas
 
@@ -796,10 +827,49 @@ trapAreas:
 .ent oddEvenSort
 oddEvenSort:
 
+move 	$t0, $a0		# starting address of the list
+move 	$t1, $a1 		# length
+
+li 		$t2, FALSE
+
+whileComparison:
+beq 	$t2, TRUE, continueSort
+j 		sortComplete
+continueSort:
+
+li 		$t2, TRUE
+
+# 	this is the first forLoop
+li 		$t3, 1						# i=1
+move 	$t4, $t1					
+sub 	$t4, $t4, 1					# len - 1
+
+move 	$t5, $t0					# creating a local copy of the list address for the forLoop logic
+loopComparison1:
+blt 	$t3, $t4, forLoop			# for(int i = 1; i < len-1; i+=2)
+j 		forLoop1Done
+forLoop1:
+lw 		$t6, ($t5)					# list[i]
+lw 		$t7, 4($t5)					# list[i + 1]
+bgt 	$t6, $t7, swap1				# if (list[i] > list[i + 1])
+j 		incrementForLoop1
+swap1:
+move 	$t8, $t7					# var = list[i + 1]
+sw 		$t6, 4($t5)					# list[i + 1] = list[i]
+sw 		$t8, ($t5)					# list[i] = var
+li 		$t2, FALSE
+
+incrementForLoop1:
+add 	$t5, $t5, 4					# increasing list for the local for loop
+add 	$t3, $t3, 2					# i+=2
+blt 	$t3, $t4, forLoop1			# for(int i = 1; i < len-1; i+=2)
+
+# this is the second forLoop
 
 
-#	YOUR CODE GOES HERE
 
+
+sortComplete:
 
 
 .end oddEvenSort

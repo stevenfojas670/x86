@@ -82,36 +82,26 @@ main:
 
 #	YOUR CODE GOES HERE
 
-la 		$t0, sides		# sides address
-li 		$t1, 0 			# counter
-lw 		$t2, len		# length
-li 		$t3, 0 			# sides sum
-la 		$t4, perims
-li 		$t6, 0			# temp counter
-li 		$t7, 0 			# perims counter
+la 		$t0, sides				# sides array address
+li 	 	$t1, 0 					# counter
+lw 		$t2, len 				# length
+la 		$t3, perims
 
 perimeterLoop:
 
 lw 		$t5, ($t0)
 
-add 	$t3, $t3, $t5		# sides sum
-add 	$t1, $t1, 1			# sides counter
-add 	$t6, $t6, 1 		# temp counter to count all 5 sides
-
-beq 	$t6, 5, addToPerims
-blt 	$t1, $t2 	perimeterLoop
-addToPerims:
-
-li 		$t6, 0				# reset total added sides counter
-sw 		$t3, ($t4)			# saving perimeter to perims[i]
-add 	$t4, $t4, 4			# incrementing through perims array
-add 	$t7, $t7, 1			# increment perims counter
+mul 	$t6, $t5, 5				# multiplying side by 5 to get the equilateral pentagon
+sw 		$t6, ($t3)				# placing the equilateral into the perims array
+add 	$t1, $t1, 1				# i++
+add 	$t0, $t0, 4				# incrementing sides array
+add 	$t3, $t3, 4				# incrementing perims array
 
 blt 	$t1, $t2, perimeterLoop
 
 la 		$t0, perims				# storing perims array address
 li 		$t1, 0					# perims counter
-move 	$t2, $t7 				# storing perims length
+lw 		$t2, len				# storing perims length
 li 		$t3, 0 					# stores sum of perimeters
 lw 		$t6, ($t0)				# min
 lw 		$t7, ($t0)				# max
@@ -140,15 +130,105 @@ sw 		$t7, max
 skip:
 add 	$t1, $t1, 1					# i++
 add 	$t0, $t0, 4					# incrementing perims array
-blt 	$t1, $t2, normalLoop
+blt		$t1, $t2, normalLoop
 
-div 	$t8, $t3, $t2
-sw 		$t8, ave
+div 	$t8, $t3, $t1
+sw 		$t8, ave					# saving average
 
 
 # ********************************************************************************
 
+la 		$t0, perims
+li 		$t1, 0						# counter
+lw 		$t2, len					# length of perims array
+li 		$t3, 0 						# sum of perimeters
+lw 		$t6, ($t0)					# eMin
+lw 		$t7, ($t0)					# eMax
+li 		$s0, 0						# counter for even numbers
 
+evenLoop:
+
+lw 		$t5, ($t0)
+
+rem 	$t8, $t5, 2
+beq 	$t8, 0, isEven
+j 		isOdd
+
+isEven:
+
+add 	$s0, $s0, 1					# increment even counter
+add 	$t3, $t3, $t5				# sum = sum + perims[i]
+
+bgt 	$t6, $t5, swapEMin			# if min > perims[i] then swap min
+j 		checkEMax
+
+swapEMin:
+move 	$t6, $t5					# min = perims[i]
+sw 		$t6, eMin
+j 		isOdd
+
+checkEMax:
+blt 	$t7, $t5, swapEMax			# if max < perims[i] then swap max
+j 		isOdd
+
+swapEMax:
+move 	$t7, $t5					# max = perims[i]
+sw 		$t7, eMax
+
+isOdd:
+add 	$t0, $t0, 4					# incrementing perims array
+add 	$t1, $t1, 1					# counter++
+blt 	$t1, $t2, evenLoop					# if counter < len then reloop
+
+div 	$t8, $t3, $s0 				# eAve = sum / even counter
+sw 		$t8, eAve
+
+# ********************************************************************************
+
+la 		$t0, perims
+li 		$t1, 0 						# counter
+lw 		$t2, len 					# length of perims array
+li 		$t3, 0 						# sum of perimeters 
+lw 		$t6, ($t0)					# min
+lw 		$t7, ($t0)					# max
+li 		$s0, 0 						# div by 9 counter
+
+div9Loop:
+
+lw 		$t5, ($t0)					# getting perims[i]
+
+rem 	$t8, $t5, 9					# perims[i] % 9
+beq 	$t8, 0, divBy9				# if perims[i] % 9 == 0 then perform calculations
+j 		notDiv
+
+divBy9:
+
+add 	$s0, $s0, 1					# increment div by 9 coutner
+add 	$t3, $t3, $t5				# d9sum = sum + perims[i]
+
+bgt 	$t6, $t5, swap9Min			# if d9min > perims[i] then swap 
+j 		check9Max
+
+swap9Min:
+move 	$t6, $t5					# d9min = perims[i]
+sw 		$t6, d9Min
+j 		notDiv
+
+check9Max:
+blt 	$t7, $t5, swap9Max			# if d9Max < perims[i] then swap
+j 		notDiv
+
+swap9Max:
+move 	$t7, $t5					# d9Max = perims[i]
+sw 		$t7, d9Max
+
+notDiv:
+add 	$t0, $t0, 4					# incrementing perims array
+add 	$t1, $t1, 1					# incrementing perims array counter
+blt 	$t1, $t2, div9Loop			# if counter < len
+
+div 	$t8, $t3, $s0				# d9Ave = sum / d9counter
+sw 		$t8, d9Ave
 	
 
 # ********************
