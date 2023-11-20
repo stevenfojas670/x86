@@ -1072,7 +1072,7 @@ showTrapStats:
 subu 	$sp, $sp, 4
 sw 		$fp, ($sp)
 
-addu 	$fp, $fp, 4
+addu 	$fp, $sp, 4
 
 move 	$t0, $a0
 move 	$t1, $a1
@@ -1118,7 +1118,7 @@ la 		$a0, str1
 syscall
 
 li 		$v0, 2
-mov.s	$f12, ($fp)
+l.s 	$f12, ($fp)
 syscall
 
 li 		$v0, 4
@@ -1126,6 +1126,9 @@ la 		$a0, new_ln
 
 # print ave
 
+li 		$v0, 2
+l.s 	$f12, 4($fp)
+syscall
 
 # print min
 
