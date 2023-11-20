@@ -241,6 +241,7 @@ FALSE = 0
 # -----
 #  Variables/constants for trapStats() function.
 
+zeroValue: 	.float 	0.0
 
 # -----
 #  Variables/constants for showTrapStats() function.
@@ -338,6 +339,10 @@ main:
 	jal	trapStats
 
 	addu	$sp, $sp, 12			# clear stack
+
+	lw 		$t0, min1
+	lw 		$t1, med1
+	lw 		$t2, max1
 
 #  show final results
 #	showTrapStats(tAreas, len, fSum, fAve, min, med, max, estMed)
@@ -727,11 +732,41 @@ prtHeaders:
 .ent estMedian
 estMedian:
 
+move 	$t0, $a0				# list
+move 	$t1, $a1				# list length
 
+rem 	$t2, $t1, 2
+beq 	$t2, 0, isEven
+j 		isOdd
 
-#	YOUR CODE GOES HERE
+isEven:
 
+div 	$t1, $t1, 2
+sub 	$t1, $t1, 1
+mul 	$t1, $t1, 4
+add 	$t0, $t0, $t1
+lw 		$t5, ($t0)				# list[len/2]
+lw 		$t6, 4($t0)				# list[(len/2) + 1]
+add 	$t5, $t5, $t6
+div 	$t5, $t5, 2
+move 	$v0, $t5
 
+j 		medianComplete
+
+isOdd:
+
+move 	$t0, $a0
+move 	$t1, $a1
+div 	$t1, $t1, 2
+sub 	$t1, $t1, 1
+mul 	$t1, $t1, 4
+add 	$t0, $t0, $t1
+lw 		$t5, ($t0)				# list[len/2]
+move 	$v0, $t5
+
+medianComplete:
+
+jr 		$ra
 
 .end estMedian
 
@@ -749,16 +784,17 @@ estMedian:
 #	tAreas areas array via passed address
 
 .globl	trapAreas
+.ent trapAreas
 trapAreas:
 
 subu 	$sp, $sp, 4				# pushing and extra space on the stack for the frame pointer
 sw 		$fp, ($sp)				# setting frame pointer into the clear space for it
 
-addu 	$fp, $sp, 4 			# setting the frame pointer to point to the Areas array of the stack pointer.
+addu 	$fp, $sp, 4 			# setting the frame pointer to point to the stack pointer
 
 # perform areas algorithm
 
-move 	$t0, $fp				# areas array
+lw 		$t0, ($fp)				# areas array
 move  	$t1, $a0				# aSides array
 move	$t2, $a1				# cSides array
 move 	$t3, $a2 				# heights array
@@ -778,6 +814,7 @@ lw 		$t9, ($t3)				# t9 = heights[i]
 mul 	$t7, $t7, $t9			# height * ((aSides + cSides) / 2)
 
 sw 		$t7, ($t0)				# saving calculation into areas array
+lw 		$t9, ($t0)				# debugging purposes
 
 # increment all address and counters
 add 	$t0, $t0, 4				# areas[i + 1]
@@ -787,6 +824,11 @@ add 	$t3, $t3, 4				# heights[i + 1]
 add 	$t6, $t6, 1 			# counter++
 
 blt 	$t6, $t4, areasLoop
+
+lw 		$fp, ($sp)
+addu 	$sp, $sp, 4
+
+jr 		$ra
 
 .end trapAreas
 
@@ -833,7 +875,7 @@ move 	$t1, $a1 		# length
 li 		$t2, FALSE
 
 whileComparison:
-beq 	$t2, TRUE, continueSort
+beq 	$t2, FALSE, continueSort
 j 		sortComplete
 continueSort:
 
@@ -843,34 +885,67 @@ li 		$t2, TRUE
 li 		$t3, 1						# i=1
 move 	$t4, $t1					
 sub 	$t4, $t4, 1					# len - 1
+move 	$t0, $a0					# resetting $t0 to the first element of the array
+add 	$t0, $t0, 4					# starting at the second element of the array
 
-move 	$t5, $t0					# creating a local copy of the list address for the forLoop logic
 loopComparison1:
-blt 	$t3, $t4, forLoop			# for(int i = 1; i < len-1; i+=2)
+blt 	$t3, $t4, forLoop1			# for(int i = 1; i < len-1; i+=2)
 j 		forLoop1Done
 forLoop1:
-lw 		$t6, ($t5)					# list[i]
-lw 		$t7, 4($t5)					# list[i + 1]
+lw 		$t6, ($t0)					# list[i]
+lw 		$t7, 4($t0)					# list[i + 1]
 bgt 	$t6, $t7, swap1				# if (list[i] > list[i + 1])
 j 		incrementForLoop1
 swap1:
-move 	$t8, $t7					# var = list[i + 1]
-sw 		$t6, 4($t5)					# list[i + 1] = list[i]
-sw 		$t8, ($t5)					# list[i] = var
+add 	$t0, $t0, 4					# setting index to list[i + 1]
+sw 		$t6, ($t0) 					# list[i + 1] = list[i]
+lw 		$t9, ($t0)					# DEBUGGING DISPLAY list[i + 1]
+sub 	$t0, $t0, 4					# moving index from list[i + 1] to list[i]
+sw 		$t7, ($t0)					# list[i] = list[i + 1]
+lw 		$t8, ($t0)					# DEBUGGING DISPLAY list[i]
 li 		$t2, FALSE
 
 incrementForLoop1:
-add 	$t5, $t5, 4					# increasing list for the local for loop
 add 	$t3, $t3, 2					# i+=2
-blt 	$t3, $t4, forLoop1			# for(int i = 1; i < len-1; i+=2)
+add 	$t0, $t0, 8					# increasing list index by 2
+blt 	$t3, $t4, forLoop1
+forLoop1Done:
 
-# this is the second forLoop
+# this is the second for loop
 
+li 		$t3, 0						# i=0
+move 	$t4, $t1					
+sub 	$t4, $t4, 1					# len - 1
+move 	$t0, $a0					# starting at the first element of the array		
 
+loopComparison2:
+blt 	$t3, $t4, forLoop2			# for(int i = 0; i < len-1; i+=2)
+j 		forLoop2Done
+forLoop2:
+lw 		$t6, ($t0)					# list[i]
+lw 		$t7, 4($t0)					# list[i + 1]
+bgt 	$t6, $t7, swap2				# if (list[i] > list[i + 1])
+j 		incrementForLoop2
+swap2:
+add 	$t0, $t0, 4					# setting index to list[i + 1]
+sw 		$t6, ($t0) 					# list[i + 1] = list[i]
+lw 		$t9, ($t0)					# DEBUGGING DISPLAY list[i + 1]
+sub 	$t0, $t0, 4					# moving index from list[i + 1] to list[i]
+sw 		$t7, ($t0)					# list[i] = list[i + 1]
+lw 		$t8, ($t0) 					# DEBUGGIN DISPLAYING list[i]
+li 		$t2, FALSE
 
+incrementForLoop2:
+add 	$t3, $t3, 2					# i+=2
+add 	$t0, $t0, 8					# increasing list index by 2
+blt 	$t3, $t4, forLoop2
+forLoop2Done:
+
+j 		whileComparison
 
 sortComplete:
 
+jr 		$ra
 
 .end oddEvenSort
 
@@ -900,11 +975,69 @@ sortComplete:
 .ent trapStats
 trapStats:
 
+subu 	$sp, $sp, 4				# pushing and extra space on the stack for the frame pointer
+sw 		$fp, ($sp)				# setting frame pointer into the clear space for it
+
+addu 	$fp, $sp, 4 			# setting the frame pointer to point to the stack pointer
+
+move 	$t0, $a0				# list address
+move 	$t1, $a1				# len
+
+lw 		$t2, ($t0)
+lw 		$t9, ($fp)
+sw 		$t2, ($t9)				# saving min
+
+div 	$t1, $t1, 2
+mul 	$t1, $t1, 4
+sub 	$t1, $t1, 4
+add 	$t0, $t0, $t1
+lw 		$t2, ($t0)
+lw 		$t9, 4($fp)
+sw 		$t2, ($t9)				# saving med
+
+move 	$t0, $a0				# resetting list address
+move 	$t1, $a1				# resetting len
+
+mul 	$t1, $t1, 4
+sub 	$t1, $t1, 4
+add 	$t0, $t0, $t1
+lw 		$t3, ($t0)				# saving final value
+lw 		$t9, 8($fp)
+sw 		$t3, ($t9)
+
+# calculating the sum and average
+
+move 	$t0, $a0				# list address 
+move 	$t1, $a1 				# len
+li 		$t2, 0					# counter
+li 		$t6, 0
+mtc1 	$t6, $f6
+cvt.s.w 	$f6, $f6			# holds 0.0
 
 
-#	YOUR CODE GOES HERE
+sumLoop:
+lw 		$t5, ($t0)
 
+mtc1 	$t5, $f4				# moving int to floating point register
+cvt.s.w 	$f4, $f4			# converting the int in the floating point register to an actual float
 
+add.s 	$f8, $f8, $f4			# sum (float) = sum + list[i]
+s.s 	$f8, ($a2)
+
+add 	$t2, $t2, 1
+add 	$t0, $t0, 4
+blt 	$t2, $t1, sumLoop
+
+mtc1 	$t1, $f6				# converting length to floating point
+cvt.s.w 	$f6, $f6	
+
+div.s 	$f8, $f8, $f6 			# sum / length
+s.s 	$f8, ($a3)				# saving ave
+
+lw 		$fp, ($sp)
+addu 	$sp, $sp, 4
+
+jr 		$ra
 
 .end trapStats
 
@@ -936,11 +1069,82 @@ trapStats:
 .ent	showTrapStats
 showTrapStats:
 
+subu 	$sp, $sp, 4
+sw 		$fp, ($sp)
+
+addu 	$fp, $fp, 4
+
+move 	$t0, $a0
+move 	$t1, $a1
+li 		$t2, 0
+
+# print header
+
+li 		$v0, 4
+la 		$a0, hdr_sr
+syscall
+
+printArrayLoop:
+li 		$v0, 4
+la 		$a0, spc
+syscall
+
+li 		$v0, 1
+lw 		$a0, ($t0)
+syscall 	
+
+addu 	$t0, $t0, 4
+add 	$t2, $t2, 1
+
+rem 	$t3, $t2, 7
+bnez 	$t3, skipNewLine
+
+li 		$v0, 4
+la 		$a0, new_ln
+syscall 	
+
+skipNewLine:
+bne 	$t2, $t1, printArrayLoop
+
+# print new line
+li 		$v0, 4
+la 		$a0, new_ln
+syscall
+
+# print sum
+
+li 		$v0, 4
+la 		$a0, str1
+syscall
+
+li 		$v0, 2
+mov.s	$f12, ($fp)
+syscall
+
+li 		$v0, 4
+la 		$a0, new_ln
+
+# print ave
 
 
-#	YOUR CODE GOES HERE
+# print min
 
 
+# print med
+
+
+# print max
+
+
+# print est med
+
+
+# print pct diff
+
+lw 		$fp, ($sp)
+addu 	$sp, $sp, 4
+
+jr 		$ra
 
 .end showTrapStats
 
