@@ -3,7 +3,8 @@
 #  NSHE ID: 2001342715
 #  Section: 1003
 #  Assignment: MIPS3
-#  Description:  
+#  Description:  Learning to use system services and floating point registers
+
 
 
 #####################################################################
@@ -741,15 +742,16 @@ j 		isOdd
 
 isEven:
 
-div 	$t1, $t1, 2
-sub 	$t1, $t1, 1
-mul 	$t1, $t1, 4
+div 	$t1, $t1, 2				# len / 2
+mul 	$t1, $t1, 4				# converting to 4 bytes
+sub 	$t1, $t1, 4				# list[(len/2) - 1]
 add 	$t0, $t0, $t1
-lw 		$t5, ($t0)				# list[len/2]
-lw 		$t6, 4($t0)				# list[(len/2) + 1]
-add 	$t5, $t5, $t6
-div 	$t5, $t5, 2
-move 	$v0, $t5
+
+lw 		$t2, ($t0)
+lw 		$t3, 4($t0)
+
+add 	$t2, $t2, $t3
+div 	$v0, $t2, 2				# mid1 + mid2 / 2
 
 j 		medianComplete
 
@@ -757,12 +759,10 @@ isOdd:
 
 move 	$t0, $a0
 move 	$t1, $a1
-div 	$t1, $t1, 2
-sub 	$t1, $t1, 1
-mul 	$t1, $t1, 4
-add 	$t0, $t0, $t1
-lw 		$t5, ($t0)				# list[len/2]
-move 	$v0, $t5
+div 	$t1, $t1, 2				# len / 2
+mul 	$t1, $t1, 4				# covnerting to 4 bytes
+add 	$t0, $t0, $t1			# list[len/2]
+lw 		$v0, ($t0)
 
 medianComplete:
 
@@ -975,70 +975,101 @@ jr 		$ra
 .ent trapStats
 trapStats:
 
-subu 	$sp, $sp, 4				# pushing and extra space on the stack for the frame pointer
-sw 		$fp, ($sp)				# setting frame pointer into the clear space for it
+subu 	$sp, $sp, 32			# preserving 6 registers
+sw 		$s0, ($sp)
+sw 		$s1, 4($sp)
+sw 		$s2, 8($sp)
+sw 		$s3, 12($sp)
+sw 		$s4, 16($sp)
+s.s 	$f20, 20($sp)
+s.s		$f21, 24($sp)
+sw		$fp, 28($sp)
 
-addu 	$fp, $sp, 4 			# setting the frame pointer to point to the stack pointer
+addu 	$fp, $sp, 32 			# accesses first stack argument	(min)
 
-move 	$t0, $a0				# list address
-move 	$t1, $a1				# len
+move 	$s0, $a0				# list address
+move 	$s1, $a1				# len
 
-lw 		$t2, ($t0)
-lw 		$t9, ($fp)
-sw 		$t2, ($t9)				# saving min
+lw 		$s2, ($s0)
+lw 		$s3, ($fp)
+sw 		$s2, ($s3)				# saving min
 
-div 	$t1, $t1, 2
-mul 	$t1, $t1, 4
-sub 	$t1, $t1, 4
-add 	$t0, $t0, $t1
-lw 		$t2, ($t0)
-lw 		$t9, 4($fp)
-sw 		$t2, ($t9)				# saving med
+rem 	$s4, $s1, 2				# checking if even or odd
+beq 	$s4, 0, listEven
+j 		listOdd
+listEven:
+div 	$s1, $s1, 2
+mul 	$s1, $s1, 4
+sub 	$s1, $s1, 4
+add 	$s0, $s0, $s1
+lw 		$s2, ($s0)				# mid1
+lw 		$s3, 4($s0)				# mid2
+add 	$s3, $s3, $s2			# mid1 + mid2
+div 	$s3, $s3, 2				# (mid1 + mid2) / 2
+lw 		$s4, 4($fp)				# getting address for med
+sw 		$s3, ($s4)				# saving med
 
-move 	$t0, $a0				# resetting list address
-move 	$t1, $a1				# resetting len
+j 		continueTrapStats
 
-mul 	$t1, $t1, 4
-sub 	$t1, $t1, 4
-add 	$t0, $t0, $t1
-lw 		$t3, ($t0)				# saving final value
-lw 		$t9, 8($fp)
-sw 		$t3, ($t9)
+listOdd:
+div 	$s1, $s1, 2				# len/2
+mul 	$s1, $s1, 4
+add 	$s0, $s0, $s1
+lw 		$s2, ($s0)				# getting med value
+lw 		$s3, 4($fp)				# getting address for med
+sw 		$s2, ($s3)				# saving med
+
+continueTrapStats:
+
+move 	$s0, $a0				# resetting list address
+move 	$s1, $a1				# resetting len
+
+mul 	$s1, $s1, 4
+sub 	$s1, $s1, 4
+add 	$s0, $s0, $s1
+lw 		$s2, ($s0)
+lw 		$s3, 8($fp)
+sw 		$s2, ($s3)				# saving max
 
 # calculating the sum and average
 
-move 	$t0, $a0				# list address 
-move 	$t1, $a1 				# len
-li 		$t2, 0					# counter
-li 		$t6, 0
-mtc1 	$t6, $f6
-cvt.s.w 	$f6, $f6			# holds 0.0
-
+move 	$s0, $a0				# list address 
+move 	$s1, $a1 				# len
+li 		$s2, 0					# counter
+li 		$s3, 0
+mtc1 	$s3, $f20
+cvt.s.w 	$f20, $f20			# holds 0.0
 
 sumLoop:
-lw 		$t5, ($t0)
+lw 		$s4, ($s0)
 
-mtc1 	$t5, $f4				# moving int to floating point register
-cvt.s.w 	$f4, $f4			# converting the int in the floating point register to an actual float
+mtc1 	$s4, $f21				# moving int to floating point register
+cvt.s.w 	$f21, $f21			# converting the int in the floating point register to an actual float
 
-add.s 	$f8, $f8, $f4			# sum (float) = sum + list[i]
-s.s 	$f8, ($a2)
+add.s 	$f20, $f20, $f21			# sum (float) = sum + list[i]
+s.s 	$f20, ($a2)
 
-add 	$t2, $t2, 1
-add 	$t0, $t0, 4
-blt 	$t2, $t1, sumLoop
+add 	$s2, $s2, 1				# i++
+add 	$s0, $s0, 4				# incrementing list
+blt 	$s2, $s1, sumLoop		# if(i < len)
 
-mtc1 	$t1, $f6				# converting length to floating point
-cvt.s.w 	$f6, $f6	
+mtc1 	$s1, $f21				# converting length to floating point
+cvt.s.w 	$f21, $f21	
 
-div.s 	$f8, $f8, $f6 			# sum / length
-s.s 	$f8, ($a3)				# saving ave
+div.s 	$f20, $f20, $f21 		# sum / length
+s.s 	$f20, ($a3)				# saving ave
 
-lw 		$fp, ($sp)
-addu 	$sp, $sp, 4
+lw		$s0, ($sp)
+lw		$s1, 4($sp)
+lw		$s2, 8($sp)
+lw		$s3, 12($sp)
+lw 		$s4, 16($sp)
+l.s		$f20, 20($sp)
+l.s		$f21, 24($sp)
+lw		$fp, 28($sp)
+addu 	$sp, $sp, 32
 
 jr 		$ra
-
 .end trapStats
 
 #####################################################################
@@ -1069,10 +1100,13 @@ jr 		$ra
 .ent	showTrapStats
 showTrapStats:
 
-subu 	$sp, $sp, 4
-sw 		$fp, ($sp)
+subu 	$sp, $sp, 16
+s.s 	$f20, ($sp)
+s.s 	$f21, 4($sp)
+s.s 	$f22, 8($sp)
+sw 		$fp, 12($sp)
 
-addu 	$fp, $sp, 4
+addu 	$fp, $sp, 16
 
 move 	$t0, $a0
 move 	$t1, $a1
@@ -1121,10 +1155,11 @@ li 		$v0, 2
 l.s 	$f12, ($fp)
 syscall
 
-li 		$v0, 4
-la 		$a0, new_ln
-
 # print ave
+
+li 		$v0, 4
+la 		$a0, str2
+syscall
 
 li 		$v0, 2
 l.s 	$f12, 4($fp)
@@ -1132,23 +1167,81 @@ syscall
 
 # print min
 
+li 		$v0, 4
+la 		$a0, str3
+syscall
+
+li 		$v0, 1
+lw	 	$a0, 8($fp)
+syscall
 
 # print med
 
+li 		$v0, 4
+la 		$a0, str4
+syscall
+
+li 		$v0, 1
+lw	 	$a0, 12($fp)
+syscall
 
 # print max
+
+li 		$v0, 4
+la 		$a0, str5
+syscall
+
+li 		$v0, 1
+lw 		$a0, 16($fp)
+syscall
 
 
 # print est med
 
+li 		$v0, 4
+la 		$a0, str6
+syscall
+
+li 		$v0, 1
+lw 		$a0, 20($fp)
+syscall
 
 # print pct diff
+
+# calculate the percentage difference
+
+lw 		$t0, 12($fp)	# med
+lw	 	$t1, 20($fp)	# estMed
+
+# convert the values to floating point
+
+mtc1 	$t0, $f20		# med
+cvt.s.w 	$f20, $f20
+
+mtc1 	$t1, $f21		# estMed
+cvt.s.w 	$f21, $f21
+
+add.s 	$f22, $f20, $f21	# med + estMed
+div.s 	$f22, $f22, $f20	# (med + estMed) / med
+
+li 		$v0, 4
+la 		$a0, str7			# printing the pctDiff string
+syscall
+
+li 		$v0, 2
+mov.s 	$f12, $f22			# printing the floating point value
+syscall
 
 lw 		$fp, ($sp)
 addu 	$sp, $sp, 4
 
-jr 		$ra
+l.s 	$f20, ($sp)
+l.s 	$f21, 4($sp)
+l.s 	$f22, 8($sp)
+lw 		$fp, 12($sp)
+addu 	$fp, $sp, 16
 
+jr 		$ra
 .end showTrapStats
 
 #####################################################################
