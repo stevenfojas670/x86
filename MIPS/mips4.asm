@@ -603,7 +603,34 @@ forLoopI:
 
 			# s3 stores the address for MB(k,j)
 
-			
+			lw 		$s4, ($s1)		# value in MC(i,j)
+			lw 		$s5, ($s2) 		# value in MA(i,k)
+			lw 		$s6, ($s3)		# value in MB(k,j)
+
+			mul 	$s7, $s5, $s6	# 			MA(i,k) * MB(k,j)
+			add 	$s7, $s7, $s4 	# MC(i,k) +
+			sw 		$s7, ($s1)		# saving calculated value into MC(i,j) location
+
+			# increment forLoopK
+
+			add 	$t8, $t8, 1
+			blt 	$t8, $t5, forLoopK	# for(k = 0; k < kDim; k++)
+		
+		# increment forLoopJ
+
+		add 	$t7, $t7, 1
+		blt 	$t7, $t4, forLoopJ	# for(j = 0; j < jDim; j++)
+
+	# increment forLoopI
+
+	add 	$t6, $t6, 1
+	blt 	$t6, $t3, forLoopI	# for(i = 0; i < iDim; i++)
+
+# end of matrix multiplication
+
+# call matrixPrint()
+
+
 
 lw  	$s0, ($sp)
 lw 		$s1, 4($sp)
