@@ -580,9 +580,9 @@ forLoopI:
 	forLoopJ:
 		forLoopK:
 			# accessing MC(i,j)
-			mul 	$s0, $t6, $t4	# 				(i * jDim
-			add 	$s0, $s0, $t7	# 						  + j)
-			mul 	$s0, $s0, 4		#							   * dataSize
+			mul 	$s0, $t6, $t4	# 			(i * jDim
+			add 	$s0, $s0, $t7	# 						+ j)
+			mul 	$s0, $s0, 4		#							  * dataSize
 			add 	$s1, $t2, $s0	# matrixC + 
 
 			# s1 stores the address for MC(i,j)
@@ -630,7 +630,10 @@ forLoopI:
 
 # call matrixPrint()
 
-
+	move 	$a0, $a2		# Matrix C
+	move 	$a1, $a3		# iDim
+	lw	 	$a2, ($fp)		# jDim
+	jal 	matrixPrint
 
 lw  	$s0, ($sp)
 lw 		$s1, 4($sp)
@@ -642,7 +645,7 @@ lw 		$s6, 24($sp)
 lw 		$s7, 28($sp)
 lw 		$fp, 32($sp)
 lw 		$ra, 36($sp)
-addu 	$fp, $sp, 40
+addu 	$sp, $sp, 40
 
 jr 		$ra
 .end 	multMatrix
@@ -659,7 +662,58 @@ jr 		$ra
 .ent 	matrixPrint
 matrixPrint:
 
-#	YOUR CODE GOES HERE
+subu 	$sp, $sp, 20
+sw 		$s0, ($sp)
+sw 		$s1, 4($sp)
+sw 		$s2, 8($sp)
+sw 		$s3, 12($sp)
+sw 		$fp, 16($sp)
+addu 	$fp, $sp, 20
+
+move 	$t0, $a0	# matrix c
+move 	$t1, $a1	# iDim
+move 	$t2, $a2	# jDim
+li 		$t3, 0		# i counter
+li 		$t4, 0		# j counter
+
+printI:
+	printJ:
+
+		# print space
+		li 		$v0, 4
+		la 		$a0, blnks4
+		syscall
+
+		# board(row, col) = baseAddress + (rowIndex * colSize + colIndex) * dataSize
+
+		mul 	$s0, $t3, $t2 	 	#				(rowIndex * colSize
+		add 	$s0, $s0, $t4 		#									+ colIndex)
+		mul 	$s0, $s0, 4 		#												* dataSize
+		add 	$s1, $t0, $s0 		# baseAddress + 
+
+		# print MC(i,j)
+		li 		$v0, 1
+		lw 		$a0, ($s1)
+		syscall
+
+		# incrementJ
+		add 	$t4, $t4, 1
+		blt 	$t4, $t2, printJ
+
+	# printI - print new line
+	li 		$v0, 4
+	la 		$a0, new_ln
+
+	# incrementI
+	add 	$t3, $t3, 1
+	blt 	$t3, $t1, printI
+
+lw 		$s0, ($sp)
+lw 		$s1, 4($sp)
+lw 		$s2, 8($sp)
+lw 		$s3, 12($sp)
+lw 		$fp, 16($sp)
+addu 	$sp, $sp, 20
 
 jr 		$ra
 .end 	matrixPrint
