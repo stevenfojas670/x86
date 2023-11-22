@@ -552,7 +552,7 @@ main:
 multMatrix:
 
 subu 	$sp, $sp, 40
-sw  	$s0, ($sp)
+sw  	$s0, 0($sp)
 sw 		$s1, 4($sp)
 sw 		$s2, 8($sp)
 sw 		$s3, 12($sp)
@@ -570,14 +570,17 @@ move 	$t2, $a2		# matrix c
 move 	$t3, $a3		# i dimension
 lw 		$t4, ($fp)		# j dimension
 lw 		$t5, 4($fp)		# k dimension
-li 		$t6, 0 			# i counter
-li 		$t7, 0 			# j counter
-li 		$t8, 0 			# k counter
 
 # board(row, col) = baseAddress + (rowIndex * colSize + colIndex) * dataSize
 
+li 		$t6, 0 					# i counter
+
 forLoopI:
+	li 	$t7, 0 					# j counter
+
 	forLoopJ:
+		li 		$t8, 0 			# k counter
+
 		forLoopK:
 			# accessing MC(i,j)
 			mul 	$s0, $t6, $t4	# 			(i * jDim
@@ -630,12 +633,44 @@ forLoopI:
 
 # call matrixPrint()
 
-	move 	$a0, $a2		# Matrix C
-	move 	$a1, $a3		# iDim
-	lw	 	$a2, ($fp)		# jDim
+	# "Matrix A"
+	li 		$v0, 4
+	la 		$a0, msg_a
+	syscall
+
+	# MA(i, k)
+	subu 	$sp, $sp, 16
+	sw 		$a0, 0($sp)
+	sw 		$a1, 4($sp)
+	sw 		$a2, 8($sp)
+
+	move 	$a0, $t0
+	move 	$a1, $t3		# i
+	move 	$a2, $t5		# k
 	jal 	matrixPrint
 
-lw  	$s0, ($sp)
+	lw 		$a0, 0($sp)
+	lw 		$a1, 4($sp)
+	lw 		$a2, 8($sp)
+	addu 	$sp, $sp, 16
+
+	# space
+	li 		$v0, 4
+	la 		$a0, new_ln
+	syscall
+
+	# "Matrix B"
+	li 		$v0, 4
+	la 		$a0, msg_b
+	syscall
+
+	# MB(k, j)
+	move 	$a0, $a1
+	lw 		$a1, 4($fp)		# k
+	lw	 	$a2, ($fp)		# j
+	jal 	matrixPrint
+
+lw  	$s0, 0($sp)
 lw 		$s1, 4($sp)
 lw 		$s2, 8($sp)
 lw 		$s3, 12($sp)
@@ -662,21 +697,25 @@ jr 		$ra
 .ent 	matrixPrint
 matrixPrint:
 
-subu 	$sp, $sp, 20
-sw 		$s0, ($sp)
+subu 	$sp, $sp, 36
+sw 		$s0, 0($sp)
 sw 		$s1, 4($sp)
 sw 		$s2, 8($sp)
 sw 		$s3, 12($sp)
-sw 		$fp, 16($sp)
-addu 	$fp, $sp, 20
+sw 		$s4, 16($sp)
+sw		$s5, 20($sp)
+sw 		$s6, 24($sp)
+sw 		$s7, 28($sp)
+sw 		$fp, 32($sp)
+addu 	$fp, $sp, 36
 
-move 	$t0, $a0	# matrix c
-move 	$t1, $a1	# iDim
-move 	$t2, $a2	# jDim
-li 		$t3, 0		# i counter
-li 		$t4, 0		# j counter
+move 	$s3, $a0	# matrix
+move 	$s4, $a1	# iDim
+move 	$s5, $a2	# jDim
 
+li 		$s6, 0		# i counter
 printI:
+	li 		$s7, 0		# j counter
 	printJ:
 
 		# print space
@@ -686,34 +725,39 @@ printI:
 
 		# board(row, col) = baseAddress + (rowIndex * colSize + colIndex) * dataSize
 
-		mul 	$s0, $t3, $t2 	 	#				(rowIndex * colSize
-		add 	$s0, $s0, $t4 		#									+ colIndex)
+		mul 	$s0, $s6, $s5 	 	#				(rowIndex * colSize
+		add 	$s0, $s0, $s7 		#									+ colIndex)
 		mul 	$s0, $s0, 4 		#												* dataSize
-		add 	$s1, $t0, $s0 		# baseAddress + 
-
-		# print MC(i,j)
+		add 	$s1, $s3, $s0 		# baseAddress + 
+		lw 		$s2, ($s1)
+		# print M(i,j)
 		li 		$v0, 1
 		lw 		$a0, ($s1)
 		syscall
 
 		# incrementJ
-		add 	$t4, $t4, 1
-		blt 	$t4, $t2, printJ
+		add 	$s7, $s7, 1
+		blt 	$s7, $s5, printJ
 
 	# printI - print new line
 	li 		$v0, 4
 	la 		$a0, new_ln
+	syscall
 
 	# incrementI
-	add 	$t3, $t3, 1
-	blt 	$t3, $t1, printI
+	add 	$s6, $s6, 1
+	blt 	$s6, $s4, printI
 
-lw 		$s0, ($sp)
+lw 		$s0, 0($sp)
 lw 		$s1, 4($sp)
 lw 		$s2, 8($sp)
 lw 		$s3, 12($sp)
-lw 		$fp, 16($sp)
-addu 	$sp, $sp, 20
+lw 		$s4, 16($sp)
+lw		$s5, 20($sp)
+lw 		$s6, 24($sp)
+lw 		$s7, 28($sp)
+lw 		$fp, 32($sp)
+addu 	$sp, $sp, 36
 
 jr 		$ra
 .end 	matrixPrint
