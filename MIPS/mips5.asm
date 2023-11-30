@@ -163,29 +163,27 @@ printLine:								# for(int i = 0; i < rows; i++)
 
 	li 		$s1, 0						# j
 
+	# print leading blanks
+	move 	$s2, $s4					# getting rows
+	sub 	$s2, $s2, $s0				# rows - i
+	li 		$s3, 0						# counter for printing leading spaces
+	beq 	$s1, 0, printLeadingSpaces	# if (j == 0) then print leading spaces
+	j 		printRow
+
+	printLeadingSpaces:					# for(int i = 0; i <= rows - currentRow; i++)
+	li 		$v0, 4
+	la 		$a0, spc
+	syscall
+
+	add 	$s3, $s3, 1
+	blt 	$s3, $s2, printLeadingSpaces
+
 	printRow:							# for(int j = 0; j <= i; j++)				
 	move 	$a0, $s0					# call pascal($s0, $s1) - $s0 is n which is current row, $s1 is k
 	move 	$a1, $s1
 	jal 	pascal
 	move 	$s5, $v0					# saving the pascal number
-
-	# print leading blanks
-	move 	$s2, $s4					# getting rows
-	sub 	$s2, $s2, $s0				# rows - currentRow
-	li 		$s3, 0						# counter for printing leading spaces
-	beq 	$s1, 0, printLeadingSpaces	# if (j == 0) then print leading spaces
-	j 		callprtPnum
-
-	printLeadingSpaces:					# for(int i = 0; i <= rows - currentRow; i++)
-
-		li 		$v0, 4
-		la 		$a0, spc
-		syscall
-
-		add 	$s3, $s3, 1
-		blt 	$s3, $s2, printLeadingSpaces
-
-	callprtPnum:				
+				
 	move 	$a0, $s0					# call prtPnum(n, $v0) - $v0 is the number returned from pascal(n, k)
 	move 	$a1, $s5
 	jal 	prtPnum		
@@ -371,10 +369,6 @@ move 	$s1, $a1 				# saving pascal number
 
 # leading blanks will be printed in the display function
 
-li 		$v0, 1				# printing the number
-move 	$a0, $s1
-syscall
-
 li 		$s4, 0
 li 		$s5, 6				# max space
 move 	$s2, $s1			# getting pascal number
@@ -394,6 +388,11 @@ syscall
 
 add 	$s4, $s4, 1
 blt 	$s4, $s5, displaySpaces
+
+li 		$v0, 1
+move 	$a0, $s1
+syscall
+
 skipSpaces:
 lw 		$s0, 0($sp)
 lw 		$s1, 4($sp)
