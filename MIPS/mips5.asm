@@ -3,7 +3,7 @@
 #  NSHE ID: 2001342715	
 #  Section: 1003
 #  Assignment: MIPS5
-#  Description:  
+#  Description:  Understanding recursion through the implementation of Pascal's triangle
 
 
 
@@ -25,7 +25,7 @@ NUMSIZE = 6		# parameter for maximum number size (digits)
 hdr:	.ascii	"\nMIPS Assignment #5\n"
 	.asciiz	"Pascal's Triangle Program\n\n"
 
-rows:	.word	5
+rows:	.word	0
 
 # -----
 #  Local variables for displayPascalTriangle routine.
@@ -80,8 +80,8 @@ main:
 #  Read max rows (1-25).
 
 doPascalAgain:
-#	jal	readRows
-#	sw	$v0, rows
+	jal	readRows
+	sw	$v0, rows
 
 # -----
 #  Display the pascal triangle.
@@ -134,23 +134,22 @@ doPascalAgain:
 .ent displayPascalTriangle
 displayPascalTriangle:
 
-subu 	$sp, $sp, 28
-sw 		$s0, ($sp)
+subu 	$sp, $sp, 32
+sw 		$s0, 0($sp)
 sw 		$s1, 4($sp)
 sw 		$s2, 8($sp)
 sw 		$s3, 12($sp)
 sw 		$s4, 16($sp)
-sw 		$ra, 20($sp)
-sw 		$fp, 24($sp)
-addu 	$fp, $sp, 28
+sw 		$s5, 20($sp)
+sw 		$ra, 24($sp)
+sw 		$fp, 28($sp)
+addu 	$fp, $sp, 32
 
 move 	$s4, $a0
-li 		$s0, 0
-printLine:
-	li 		$s1, 0
-	printRow:
+li 		$s0, 0							# i
+printLine:								# for(int i = 0; i < rows; i++)
 
-	li 		$v0, 4
+	li 		$v0, 4						# printing row labels
 	la 		$a0, rmsg1
 	syscall
 
@@ -158,38 +157,58 @@ printLine:
 	move 	$a0, $s0
 	syscall
 
-	li 		$v0, 4
+	li 		$v0, 4	
 	la 		$a0, rmsg2
 	syscall
 
-	# call pascal($s0, $s1) - $s0 is n, $s1 is k
-	move 	$a0, $s0	
+	li 		$s1, 0						# j
+
+	printRow:							# for(int j = 0; j <= i; j++)				
+	move 	$a0, $s0					# call pascal($s0, $s1) - $s0 is n which is current row, $s1 is k
 	move 	$a1, $s1
 	jal 	pascal
+	move 	$s5, $v0					# saving the pascal number
 
-	# call prtPnum(n, $v0) - $v0 is the number returned from pascal(n, k)
-	move 	$a0, $s0
-	move 	$a1, $v0
-	jal 	prtPnum
+	# print leading blanks
+	move 	$s2, $s4					# getting rows
+	sub 	$s2, $s2, $s0				# rows - currentRow
+	li 		$s3, 0						# counter for printing leading spaces
+	beq 	$s1, 0, printLeadingSpaces	# if (j == 0) then print leading spaces
+	j 		callprtPnum
+
+	printLeadingSpaces:					# for(int i = 0; i <= rows - currentRow; i++)
+
+		li 		$v0, 4
+		la 		$a0, spc
+		syscall
+
+		add 	$s3, $s3, 1
+		blt 	$s3, $s2, printLeadingSpaces
+
+	callprtPnum:				
+	move 	$a0, $s0					# call prtPnum(n, $v0) - $v0 is the number returned from pascal(n, k)
+	move 	$a1, $s5
+	jal 	prtPnum		
 
 	add 	$s1, $s1, 1
-	ble 	$s1, $s0, printRow
+	ble 	$s1, $s0, printRow			# if(j <= i)
 
 	li 		$v0, 4
 	la 		$a0, nline
 	syscall
 
 add 	$s0, $s0, 1
-blt 	$s0, $s4, printLine
+blt 	$s0, $s4, printLine				# if(i < rows)
 
-lw 		$s0, ($sp)
+lw 		$s0, 0($sp)
 lw 		$s1, 4($sp)
 lw 		$s2, 8($sp)
 lw 		$s3, 12($sp)
 lw 		$s4, 16($sp)
-lw 		$ra, 20($sp)
-lw 		$fp, 24($sp)
-addu 	$sp, $sp, 28
+lw 		$s5, 20($sp)
+lw 		$ra, 24($sp)
+lw 		$fp, 28($sp)
+addu 	$sp, $sp, 32
 
 jr 		$ra
 .end displayPascalTriangle
@@ -213,7 +232,7 @@ jr 		$ra
 readRows:
 
 subu 	$sp, $sp, 8
-sw 		$s0, ($sp)
+sw 		$s0, 0($sp)
 sw 		$fp, 4($sp)
 addu 	$fp, $sp, 8
 
@@ -236,7 +255,7 @@ syscall
 j 		entryPrompt
 
 inBounds:
-lw 		$s0, ($sp)
+lw 		$s0, 0($sp)
 lw 		$fp, 4($sp)
 addu 	$sp, $sp, 8
 
@@ -266,30 +285,37 @@ jr 	$ra
 .ent pascal
 pascal:
 
-subu 	$sp, $sp, 16
-sw 		$s0, ($sp)
+subu 	$sp, $sp, 24
+sw 		$s0, 0($sp)
 sw 		$s1, 4($sp)
 sw 		$s2, 8($sp)
 sw 		$s3, 12($sp)
 sw 		$ra, 16($sp)
-		
+sw		$fp, 20($sp)
+addu 	$fp, $sp, 24
+
+move 	$s0, $a0						# saving n
+move 	$s1, $a1 						# saving k
+
 # base case
-beq 	$a1, 0, pascalDone				# if k = 0
-beq 	$a1, $a0, pascalDone			# if k = n
+beq 	$s1, 0, pascalDone				# if k = 0
+beq 	$s1, $a0, pascalDone			# if k = n
 
-sub 	$s0, $a0, 1 					# n - 1
-sub 	$s1, $a1, 1						# k - 1
-move 	$s3, $s1 						# saving k
+# Pascal(n - 1, k - 1)
+sub 	$s2, $s0, 1						# n - 1
+move 	$a0, $s2
+sub 	$s2, $s1, 1 					# k - 1
+move 	$a1, $s2
+jal 	pascal
+move 	$s3, $v0						# saving Pascal(n - 1, k - 1)
 
-move 	$a0, $s0						# passing n - 1
-move 	$a1, $s1						# passing k - 1
-jal 	pascal							# calling pascal(n-1,k-1)
-move 	$s2, $v0						# saving pascal(n-1,k-1)
+# Pascal (n - 1, k)
+sub 	$s2, $s0, 1						# n - 1
+move 	$a0, $s2
+move 	$a1, $s1						# k
+jal 	pascal
 
-move 	$a0, $s0						# passing n - 1
-move 	$a1, $s3						# passing k
-jal 	pascal							# calling pascal(n-1, k)
-add 	$v0, $s2, $v0 					# pascal(n-1, k-1) + pascal(n-1, k)
+add 	$v0, $v0, $s3					# Pascal(n - 1, k - 1) + Pascal(n - 1, k)
 
 j 		done
 
@@ -297,12 +323,13 @@ pascalDone:
 li 		$v0, 1							# then return 1
 
 done:
-lw 		$s0, ($sp)
+lw 		$s0, 0($sp)
 lw 		$s1, 4($sp)
 lw 		$s2, 8($sp)
 lw 		$s3, 12($sp)
 lw 		$ra, 16($sp)
-addu 	$sp, $sp, 16
+lw 		$fp, 20($sp)
+addu 	$sp, $sp, 24
 
 jr 		$ra
 .end pascal
@@ -328,41 +355,55 @@ jr 		$ra
 .ent prtPnum
 prtPnum:
 
-subu 	$sp, $sp, 12
-sw 		$s0, ($sp)
+subu 	$sp, $sp, 32
+sw 		$s0, 0($sp)
 sw 		$s1, 4($sp)
 sw 		$s2, 8($sp)
 sw 		$s3, 12($sp)
+sw 		$s4, 16($sp)
+sw 		$s5, 20($sp)
+sw		$ra, 24($sp)
+sw 		$fp, 28($sp)
+addu 	$fp, $sp, 32
 
-lw 		$s0, rows
-li 		$s1, 0					# counter for printing leading spaces
-subu 	$s0, $s0, $a0			# rows - n
-beq 	$a1, 1, printLdSpc
-j 		printNum
-printLdSpc:
+move 	$s0, $a0				# saving n
+move 	$s1, $a1 				# saving pascal number
 
+# leading blanks will be printed in the display function
+
+li 		$v0, 1				# printing the number
+move 	$a0, $s1
+syscall
+
+li 		$s4, 0
+li 		$s5, 6				# max space
+move 	$s2, $s1			# getting pascal number
+li 		$s3, 0 				# digit counter
+
+getDigits:
+div 	$s2, $s2, 10		# dividing the pascal number by 10 to get the amount of digits
+add 	$s3, $s3, 1			# counts the digits
+bnez 	$s2, getDigits		# if (pascalNum / 10 != 0) then keep looping
+
+sub 	$s5, $s5, $s3		# max spaces = max spaces - digit count
+
+displaySpaces:
 li 		$v0, 4
-la 		$a0, spc
-syscall
-
-add 	$s1, $s1, 1				# i++
-blt 	$s1, $s0, printLdSpc	# while(i < rows - n)
-
-printNum:
-
-li 		$v0, 1					# print pascal number
-move 	$a0, $a1
-syscall
-
-li 		$v0, 4					# print spc1
 la 		$a0, spc1
 syscall
 
-lw 		$s0, ($sp)
+add 	$s4, $s4, 1
+blt 	$s4, $s5, displaySpaces
+skipSpaces:
+lw 		$s0, 0($sp)
 lw 		$s1, 4($sp)
 lw 		$s2, 8($sp)
 lw 		$s3, 12($sp)
-addu 	$sp, $sp, 12
+lw 		$s4, 16($sp)
+lw 		$s5, 20($sp)
+lw		$ra, 24($sp)
+lw 		$fp, 28($sp)
+addu 	$sp, $sp, 32
 
 jr 		$ra
 .end prtPnum
@@ -374,8 +415,65 @@ jr 		$ra
 
 
 #	YOUR CODE GOESH HERE
+.globl checkAgain
+.ent checkAgain
+checkAgain:
 
+subu 	$sp, $sp, 8
+sw 		$s0, 0($sp)
+sw 		$s1, 4($sp)
 
+retryPrompt:
+li 		$v0, 4
+la 		$a0, ask
+syscall
+
+li 		$v0, 8						# syscall to get yes or no for another game
+la 		$a0, uAns
+li 		$a1, 3
+syscall
+
+la 		$s0, uAns
+lb 		$s1, ($s0)
+
+bne 	$s1, 89, checky				# if(input != "Y")
+j 		tryAgain
+checky:
+bne 	$s1, 121, checkN			# if(input != "y")
+j 		tryAgain
+checkN:
+bne 	$s1, 78, checkn				# if(input != "N")
+j 		gameOver
+checkn:
+bne 	$s1, 110, error				# if(input != "n")
+j 		gameOver
+
+error:
+li 		$v0, 4
+la 		$a0, badAns
+syscall
+j 		retryPrompt
+
+tryAgain:
+li 		$v0, TRUE					# retry the game
+j 		checkComplete
+
+gameOver:
+li 		$v0, 4						# end game
+la 		$a0, dMsg
+syscall 	
+
+li 		$v0, FALSE
+j 		checkComplete
+
+checkComplete:
+
+lw 		$s0, 0($sp)
+lw 		$s1, 4($sp)
+addu 	$sp, $sp, 8
+
+jr 		$ra
+.end checkAgain
 
 #####################################################################
 
